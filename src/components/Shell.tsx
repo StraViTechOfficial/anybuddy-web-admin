@@ -7,6 +7,7 @@ import {
   Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, SidebarSimple, DotsThree, CaretDown,
 } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
+import { payoutAlerts } from "@/app/(app)/payouts/data";
 import { Palette } from "./Palette";
 import s from "./Shell.module.css";
 
@@ -44,7 +45,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       count("admin/service-provider/list", { status: 0 }),
       count("admin/booking-management/list-bookings", { status: 1 }),
       count("admin/cms-management/list-supportUs-queries", { type: 1 }),
-      count("admin/payouts", { status: "requested" }),
+      payoutAlerts().then((a) => a.n, () => undefined),
       api<Record<string, unknown>>("admin/platform-config/get-all").then((r) => !!r.data && Object.keys(r.data).length > 0).catch(() => undefined),
     ]).then(([buddies, requests, support, payouts, fees]) => setCounts({ buddies, requests, support, payouts: payouts as number | undefined, fees: fees as boolean | undefined }));
   }, []);
