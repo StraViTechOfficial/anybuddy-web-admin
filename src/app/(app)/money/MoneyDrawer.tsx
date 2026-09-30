@@ -8,15 +8,28 @@ import { Modal } from "@/components/Modal";
 import b from "../bookings/bookings.module.css";
 import s from "./money.module.css";
 
-type Line = { at: string; section: "in" | "out" | "recovered"; label: string; amount: number; held: boolean; status: string | null; ref: string | null };
-type Trail = { _id: string; bookingId: string | null; hasLedger: boolean; lines: Line[]; totals: { in: number; out: number; recovered: number; net: number; commission: number; fees: number } };
+// Every line's amount is positive; its section gives the direction (sign below). totals.held is signed: − = released.
+type Section = "in" | "out" | "held" | "released" | "recovered";
+type Line = { at: string; section: Section; label: string; amount: number; held: boolean; status: string | null; ref: string | null };
+type Trail = { _id: string; bookingId: string | null; hasLedger: boolean; lines: Line[]; totals: { in: number; out: number; held: number; recovered: number; net: number; commission: number; fees: number } };
 /** What the booking record says, for bookings from before the ledger. */
 export type Recorded = { paid: number; refunded: number; tax: number; fee: number; earned: number };
 
 const time = (d: string) => `${date(d)} · ${new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(new Date(d))}`;
-const SECTIONS = [["in", "In", "From the customer"], ["out", "Out", "Refunds, Stripe fees, the Buddy's share and tax held"], ["recovered", "Recovered", "Stripe fees taken back from the Buddy"]] as const;
+const SECTIONS: [Section, string, string, string][] = [
+  ["in", "Money in", "From the customer", ""],
+  ["out", "Money out", "Refunds, Stripe fees, the Buddy's share, sales tax", "− "],
+  ["held", "Held for the job", "Until the job is done", "− "],
+  ["released", "Released", "Held money freed when the job was done", "+ "],
+  ["recovered", "Taken back from Buddies", "Stripe fees the Buddy paid back", "+ "],
+];
+// The Buddy payout's status, in plain words (manual mode: paid or failed by the admin's bank transfer).
+const STATUS: Record<string, string> = {
+  owed: "not sent yet", pending: "not sent yet", sent: "sent to the Buddy's Stripe account", paid: "paid to the Buddy's bank",
+  failed: "payout failed", reversed: "part taken back after a refund",
+};
 
-/** One booking's money statement from the ledger: In − Out + Recovered = Net to AnyBuddy. */
+/** One booking's money statement from the ledger: money in − money out − held + taken back = kept by Any-Buddy. */
 export function MoneyDrawer({ id, code, recorded, onClose }: { id: string; code: string; recorded: Recorded; onClose: () => void }) {
   const { data: t, error } = useLoad(() => api<Trail>(`admin/money/bookings/${id}/trail`).then((r) => r.data), [id]);
   return (
@@ -26,29 +39,31 @@ export function MoneyDrawer({ id, code, recorded, onClose }: { id: string; code:
       {error && <p className="err">{error}</p>}
       {!t && !error && <div className="skeleton" style={{ height: 240 }} />}
       {t?.hasLedger && <>
-        {SECTIONS.map(([k, title, sub]) => {
+        {SECTIONS.map(([k, title, sub, sign]) => {
           const lines = t.lines.filter((l) => l.section === k);
           return lines.length > 0 && (
             <section key={k}><h3 className={b.h3}>{title} <span className="hint">· {sub}</span></h3>
               <div className={b.money}>
                 {lines.map((l, i) => (
                   <div key={i}>
-                    <span>{l.label}<small className={s.sub}>{time(l.at)}{l.held && " · held, not paid out yet"}{l.status && ` · ${l.status}`}{l.ref && <> · <span className="mono">{l.ref}</span></>}</small></span>
-                    <span>{k === "out" ? "− " : k === "recovered" ? "+ " : ""}{money(l.amount)}</span>
+                    <span>{l.label}<small className={s.sub}>{time(l.at)}{l.held && " · still held by Any-Buddy"}{l.status && ` · ${STATUS[l.status] ?? l.status}`}{l.ref && <> · <span className="mono">{l.ref}</span></>}</small></span>
+                    <span>{sign}{money(l.amount)}</span>
                   </div>
                 ))}
               </div>
             </section>
           );
         })}
-        <section><h3 className={b.h3}>Net to AnyBuddy</h3>
+        <section><h3 className={b.h3}>Kept by Any-Buddy</h3>
           <div className={b.money}>
-            <div><span>In</span><span>{money(t.totals.in)}</span></div>
-            <div><span>Out</span><span>− {money(t.totals.out)}</span></div>
-            <div><span>Recovered</span><span>+ {money(t.totals.recovered)}</span></div>
-            <div className={b.tot}><span>Net to AnyBuddy</span><span>{money(t.totals.net)}</span></div>
+            <div><span>Money in</span><span>{money(t.totals.in)}</span></div>
+            <div><span>Money out</span><span>− {money(t.totals.out)}</span></div>
+            {t.totals.held > 0 && <div><span>Held for the job</span><span>− {money(t.totals.held)}</span></div>}
+            {t.totals.held < 0 && <div><span>Released when the job was done</span><span>+ {money(-t.totals.held)}</span></div>}
+            {t.totals.recovered > 0 && <div><span>Taken back from Buddies</span><span>+ {money(t.totals.recovered)}</span></div>}
+            <div className={b.tot}><span>Kept by Any-Buddy</span><span>{money(t.totals.net)}</span></div>
           </div>
-          <p className="hint" style={{ marginTop: 8 }}>Net is the commission kept ({money(t.totals.commission)}) minus Stripe fees ({money(t.totals.fees)}) plus recoveries. Lines marked held are money AnyBuddy still holds for the Buddy, the state or the job.</p>
+          <p className="hint" style={{ marginTop: 8 }}>The commission ({money(t.totals.commission)}) minus Stripe fees ({money(t.totals.fees)}), plus fees taken back from the Buddy. &ldquo;Still held&rdquo; is money Any-Buddy holds for the Buddy, the state or the job.</p>
         </section>
       </>}
       {t && !t.hasLedger && <>

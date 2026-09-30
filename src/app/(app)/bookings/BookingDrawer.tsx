@@ -15,10 +15,24 @@ type Detail = {
   _id: string; bookingId: string; serviceName: string; categoryName?: string; scheduledDate: string; selectedSlot: string; endTime?: string; address?: string; userDesc?: string;
   status: number; cancelledBy?: string | null; cancelReason?: string | null; price: number; taxAmount?: number; commissionAmount?: number; vendorPriceAfterDetection?: number;
   createdAt?: string; acceptedAt?: string; checkInAt?: string; checkOutAt?: string; hoursBilled?: number; hoursWorked?: number; expiresAt?: string;
-  checkoutRefundAmount?: number; checkoutRefundStatus?: string | null; payoutStatus?: string | null; checkInImages?: string[]; checkOutImages?: string[];
+  checkoutRefundAmount?: number; checkoutRefundStatus?: string | null; checkInImages?: string[]; checkOutImages?: string[];
+  payoutStatus?: string | null; payoutAmount?: number | null; payoutSentAt?: string | null; payoutArrivesBy?: string | null; payoutPaidAt?: string | null;
   serviceProvider?: Person; userDetails?: Person;
 };
-const at = (d?: string) => (d ? `${date(d)} · ${new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(new Date(d))}` : "");
+const at = (d?: string | null) => (d ? `${date(d)} · ${new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(new Date(d))}` : "");
+// The Buddy's payout: stripe mode is sent to their Stripe account, then paid at their bank; manual mode is paid by hand.
+const payout = (b: Detail) => {
+  const amt = money(b.payoutAmount ?? b.vendorPriceAfterDetection ?? 0);
+  const when = (d?: string | null) => (d ? ` · ${at(d)}` : "");
+  switch (b.payoutStatus) {
+    case "pending": return `${amt} not sent yet`;
+    case "sent": return `${amt} sent to the Buddy's Stripe account${when(b.payoutSentAt)}${b.payoutArrivesBy ? ` · reaches their bank by ${date(b.payoutArrivesBy)}` : ""}`;
+    case "paid": return `${amt} paid${b.payoutPaidAt ? when(b.payoutPaidAt) : b.payoutArrivesBy ? ` · ${date(b.payoutArrivesBy)}` : ""}`;
+    case "failed": return `${amt} · payout failed`;
+    case "reversed": return `Part taken back after a refund · ${amt} kept by the Buddy`;
+    default: return "";
+  }
+};
 
 /** Everything about one booking. Cancel / refund from here needs the admin endpoint (FEA-43). */
 export function BookingDrawer({ id, onClose }: { id: string; onClose: () => void }) {
@@ -41,7 +55,7 @@ export function BookingDrawer({ id, onClose }: { id: string; onClose: () => void
         ["Buddy accepted", at(b.acceptedAt), b.status >= 2 ? "done" : ""],
         ["Checked in", at(b.checkInAt), b.checkInAt ? "done" : ""],
         ["Checked out", b.checkOutAt ? `${at(b.checkOutAt)} · ${b.hoursWorked ?? "–"} h worked, ${b.hoursBilled ?? "–"} h billed` : "", b.checkOutAt ? "done" : ""],
-        ["Paid out to the Buddy", b.payoutStatus ? `Payout ${b.payoutStatus}` : "", b.payoutStatus === "paid" ? "done" : b.payoutStatus === "failed" ? "bad" : ""],
+        ["Paid out to the Buddy", payout(b), b.payoutStatus === "paid" ? "done" : b.payoutStatus === "failed" ? "bad" : ""],
       ] as [string, string, "done" | "bad" | ""][]),
   ];
 

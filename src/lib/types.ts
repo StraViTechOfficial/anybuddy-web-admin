@@ -11,6 +11,8 @@ export type Booking = {
   timeInterval?: string;
   price: number;
   vendorPriceAfterDetection?: number;
+  checkoutRefundAmount?: number; // unused hours paid back at check-out
+  checkoutRefundStatus?: string | null;
   commissionAmount?: number;
   taxAmount?: number;
   cancelledBy?: "customer" | "provider" | "system" | null;

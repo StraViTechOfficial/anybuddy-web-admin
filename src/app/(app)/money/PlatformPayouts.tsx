@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useRef, useState } from "react";
+import Link from "next/link";
 import { Bank, CheckCircle, Clock, Info, XCircle } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useLoad } from "@/lib/useLoad";
@@ -12,7 +13,7 @@ import s from "./money.module.css";
 // (commission, sales tax held) reaches its bank only from here. The backend recomputes what is safe on every payout.
 type Balance = {
   available: number; pending: number; held: number; reserve: number; safeToPayOut: number;
-  lines: { label: string; amount: number }[]; bank: { bankName: string | null; last4: string } | null; schedule: string | null;
+  lines: { label: string; amount: number; href?: string }[]; bank: { bankName: string | null; last4: string } | null; schedule: string | null;
 };
 type Payout = { id: string; amount: number; created: string; arrivalDate: string | null; status: string; failureMessage: string | null };
 const STATUS: Record<string, [string, string, React.ElementType]> = {
@@ -40,10 +41,10 @@ export function PlatformPayouts() {
           <div className={s.kpis}>
             <div><small>Available in Stripe</small><b>{b ? money(b.available) : "—"}</b><span className="hint">Ready to move to the bank</span></div>
             <div><small>On the way from customers</small><b>{b ? money(b.pending) : "—"}</b><span className="hint">Pending at Stripe, available in a few days</span></div>
-            <div><small>Held for open jobs</small><b>{b ? money(b.held + b.reserve) : "—"}</b><span className="hint">Unfinished jobs, unpaid Buddy shares, refund reserve</span></div>
+            <div><small>Held for open jobs</small><b>{b ? money(b.held + b.reserve) : "—"}</b><span className="hint">Unfinished jobs, Buddy payouts not sent, refund reserve</span></div>
             <div><small>Safe to pay out</small><b>{b ? money(b.safeToPayOut) : "—"}</b><span className="hint">Available minus what is held</span></div>
           </div>
-          {b && <div className={s.fees}>{b.lines.slice(1, -1).map((l) => <span key={l.label}>{l.label} <b>{money(l.amount)}</b></span>)}</div>}
+          {b && <div className={s.fees}>{b.lines.slice(1, -1).map((l) => <span key={l.label}>{l.href ? <Link href={l.href}>{l.label}</Link> : l.label} <b>{money(l.amount)}</b></span>)}</div>}
         </>}
         <h3 style={{ fontSize: 13, fontWeight: 600, margin: "18px 0 8px" }}>Latest payouts</h3>
         {hist.error ? <p className="err">{hist.error}</p> : hist.data && !hist.data.length ? <p className="hint">No payouts to the bank yet.</p> : (
@@ -103,7 +104,7 @@ function PayOut({ safe, bankName, onClose, onDone }: { safe: number; bankName: s
   return (
     <Modal title={`Pay out to ${bankName}`} onClose={close}
       footer={<><button type="button" className="btn" onClick={close} disabled={busy}>Cancel</button><button className="btn p" form="poF" disabled={busy} aria-busy={busy}>{busy ? "Sending…" : `Pay out ${problem ? "" : money(amount)}`}</button></>}>
-      <p>Moves AnyBuddy&apos;s own money from Stripe to {bankName}. It usually lands in 1–2 business days.</p>
+      <p>Moves Any-Buddy&apos;s own money from Stripe to {bankName}. It usually lands in 1–2 business days.</p>
       <form id="poF" className="field" onSubmit={submit} noValidate>
         <label htmlFor="poA" style={{ fontWeight: 600 }}>Amount (USD)</label>
         <input id="poA" className="input" inputMode="decimal" autoFocus value={text} aria-invalid={!!err} aria-describedby="poH"

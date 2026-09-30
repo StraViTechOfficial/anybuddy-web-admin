@@ -57,7 +57,7 @@ export default function Dashboard() {
         <Link className={s.kpi} href="/bookings"><small>Bookings</small><span><b>{d?.summary.totalBookings ?? "–"}</b>{d && <em>▲ {d.summary.totalBookings - d.summary.comparisons.totalBookings}</em>}</span><span className="hint">vs {d?.summary.comparisons.totalBookings ?? "–"} last period</span></Link>
         <Link className={s.kpi} href="/bookings?tab=Completed"><small>Completed</small><span><b>{d?.summary.totalCompleted ?? "–"}</b>{d && <em>▲ {d.summary.totalCompleted - d.summary.comparisons.totalCompleted}</em>}</span><span className="hint">vs {d?.summary.comparisons.totalCompleted ?? "–"} last period</span></Link>
         <Link className={s.kpi} href="/bookings?tab=Expired"><small>Canceled</small><span><b>{d?.summary.totalCancelled ?? "–"}</b></span><span className="hint">{count("Expired")} expired with no Buddy reply</span></Link>
-        <div className={s.kpi}><small>Booking value this week</small><span><b>{money(last, true)}</b>{prev > 0 && <em className={last < prev ? s.neg : ""}>{last < prev ? "▼" : "▲"} {Math.abs(Math.round((1 - last / prev) * 100))}%</em>}</span><span className="hint">vs {money(prev, true)} last week</span></div>
+        <div className={s.kpi}><small>Booking value this week</small><span><b>{money(last)}</b>{prev > 0 && <em className={last < prev ? s.neg : ""}>{last < prev ? "▼" : "▲"} {Math.abs(Math.round((1 - last / prev) * 100))}%</em>}</span><span className="hint">vs {money(prev)} last week</span></div>
       </section>
 
       <div className={s.grid}>

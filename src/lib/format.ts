@@ -1,8 +1,8 @@
 // Money, dates, phones and names: one place. Business time zone is America/New_York (D-32).
 export const TZ = "America/New_York";
 
-export const money = (n: number | null | undefined, whole = false) =>
-  n == null ? "—" : "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 });
+export const money = (n: number | null | undefined) =>
+  n == null ? "—" : "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-US", { timeZone: TZ, ...opts });
 /** "Sep 30, 2026" */

@@ -28,20 +28,20 @@ export function ValueChart({ graph }: { graph: Graph }) {
 
   return (
     <div className={s.wrap}>
-      <svg ref={svg} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Booking value per week: ${graph.labels.map((l, i) => `${l} ${money(v[i], true)}`).join("; ")}`}>
+      <svg ref={svg} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Booking value per week: ${graph.labels.map((l, i) => `${l} ${money(v[i])}`).join("; ")}`}>
         <defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="var(--navy)" stopOpacity=".18" /><stop offset="1" stopColor="var(--navy)" stopOpacity="0" /></linearGradient></defs>
         {ticks.map((t) => <g key={t}><line className={s.grid} x1={L} x2={W - R} y1={y(t)} y2={y(t)} /><text x={L - 8} y={y(t) + 4} textAnchor="end">{t >= 1000 ? `$${t / 1000}k` : `$${t}`}</text></g>)}
         <path d={area} fill="url(#ga)" />
         <path d={line} className={s.ln} />
         {v.map((val, i) => <circle key={i} cx={x(i)} cy={y(val)} r={i === n - 1 ? 5 : 4} className={i === n - 1 ? s.end : s.pt} />)}
-        <text x={x(n - 1) - 10} y={y(v[n - 1]) + 22} textAnchor="end" className={s.val}>{money(v[n - 1], true)} so far</text>
+        <text x={x(n - 1) - 10} y={y(v[n - 1]) + 22} textAnchor="end" className={s.val}>{money(v[n - 1])} so far</text>
         {graph.labels.map((l, i) => <text key={l} x={x(i)} y={H - 8} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}>{label(l)}</text>)}
         {hover != null && <line className={s.xh} x1={x(hover)} x2={x(hover)} y1={T} y2={H - B} />}
         <rect x={L} y={T} width={W - L - R} height={H - T - B} fill="transparent" onMouseMove={move} onMouseLeave={() => setHover(null)} />
       </svg>
       {hover != null && (
         <div className={s.tip} style={{ left: 18 + x(hover) * scale, top: 6 + y(v[hover]) * scale }}>
-          <b>{money(v[hover], true)}</b>{graph.labels[hover]} · avg {money(graph.averagePerAppointment[hover], true)} per booking
+          <b>{money(v[hover])}</b>{graph.labels[hover]} · avg {money(graph.averagePerAppointment[hover])} per booking
         </div>
       )}
     </div>
