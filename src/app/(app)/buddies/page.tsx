@@ -48,7 +48,7 @@ function Buddies() {
       .then((c) => setCounts(Object.fromEntries(c)));
   }, [rows.length]);
 
-  // j / k move, A approves, R jumps to the reason box (waiting tab only).
+  // j / k move, A approves, R opens the reject step (waiting tab only).
   useEffect(() => {
     if (tab !== "0") return;
     const key = (e: KeyboardEvent) => {
@@ -57,7 +57,7 @@ function Buddies() {
       if (e.key === "j" && i < rows.length - 1) setSel(rows[i + 1]._id);
       else if (e.key === "k" && i > 0) setSel(rows[i - 1]._id);
       else if (e.key.toLowerCase() === "a") (document.getElementById("approve") as HTMLButtonElement | null)?.click();
-      else if (e.key.toLowerCase() === "r") { e.preventDefault(); document.getElementById("rej")?.focus(); }
+      else if (e.key.toLowerCase() === "r") { e.preventDefault(); (document.getElementById("reject") as HTMLButtonElement | null)?.click(); }
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
@@ -144,7 +144,7 @@ function Buddies() {
       {bulk && (
         <Modal title={`Reject ${plural(checked.size, "application")}`} onClose={() => !bulk.running && setBulk(null)}
           footer={<><button className="btn" onClick={() => setBulk(null)} disabled={!!bulk.running}>Back</button><button className="btn ds" onClick={rejectChecked} disabled={!!bulk.running}>{bulk.running ? `Rejecting ${bulk.running} of ${checked.size}…` : `Reject ${checked.size}`}</button></>}>
-          <p>Each one gets the rejection email. Reason recorded: “Test account, not a real applicant”.</p>
+          <p>Each one gets the standard “not approved” email and app notice. Use this for test sign-ups; reject a real applicant from their review.</p>
         </Modal>
       )}
     </>

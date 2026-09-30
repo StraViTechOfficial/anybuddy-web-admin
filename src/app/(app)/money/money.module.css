@@ -10,3 +10,6 @@
 .legend b { margin-left: auto; color: var(--ink); }
 @media (max-width: 1180px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .legend { grid-template-columns: 1fr; } .kpis b { font-size: 24px; } }
+.sub { display: block; font-size: 12px; color: var(--mute); margin-top: 2px; }
+.fees { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink2); margin-top: 14px; }
+.fees b { color: var(--ink); }

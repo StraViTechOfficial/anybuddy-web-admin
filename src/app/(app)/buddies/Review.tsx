@@ -7,6 +7,7 @@ import { clock, fullName, initials, money, phone } from "@/lib/format";
 import type { Buddy } from "@/lib/types";
 import { useToast } from "@/components/Toast";
 import { Modal } from "@/components/Modal";
+import { ReasonDialog } from "@/components/ReasonDialog";
 import s from "./buddies.module.css";
 
 type Detail = { ProviderDetails: Buddy & { availability?: { day: number; isOpen: boolean; from: string; to: string }[]; averageRating?: number; totalRatings?: number; totalEarning?: number }; categories?: { categoryName: string }[] };
@@ -26,8 +27,7 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
     ]);
     return { ...d.data, offers: o.data || [] };
   }, [id]);
-  const [reason, setReason] = useState("");
-  const [reasonErr, setReasonErr] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [block, setBlock] = useState(false);
   const [decidedNow, setDecidedNow] = useState<0 | 1 | 2>();
@@ -38,15 +38,17 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
   const b = { ...data.ProviderDetails, isActive: activeNow ?? known.active }, name = fullName(b), status = decidedNow ?? known.status;
   const canApprove = !!b.IdProofFront && !!b.IdProofBack;
 
-  async function decide(st: 1 | 2) {
-    if (st === 2 && !reason.trim()) { setReasonErr(true); document.getElementById("rej")?.focus(); return; }
+  // Reject throws so ReasonDialog shows the error inside itself; approve reports by toast.
+  async function send(st: 1 | 2, reason = "") {
+    await api("admin/service-provider/update-verification-status", { method: "PATCH", body: { serviceProviderId: id, status: st, reason: reason || undefined } });
+    toast(st === 1 ? `${name} approved · they can take bookings now` : `${name} rejected · email sent`);
+    setRejecting(false);
+    setDecidedNow(st);
+    onDecided?.(id, st);
+  }
+  async function approve() {
     setBusy(true);
-    try {
-      await api("admin/service-provider/update-verification-status", { method: "PATCH", body: { serviceProviderId: id, status: st, reason: reason.trim() || undefined } });
-      toast(st === 1 ? `${name} approved · they can take bookings now` : `${name} rejected · email sent`);
-      setDecidedNow(st);
-      onDecided?.(id, st);
-    } catch (e) { toast((e as Error).message); }
+    try { await send(1); } catch (e) { toast((e as Error).message); }
     setBusy(false);
   }
   async function toggleActive() {
@@ -67,11 +69,11 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
         <div style={{ minWidth: 0 }}><h2 style={{ fontSize: "var(--fs-h3)" }}>{name}</h2><span className="muted">{b.email}{/^pw-test-auth-/.test(b.email ?? "") && <span className="flag"> · automated-test sign-up</span>}</span></div>
         <div className={s.acts}>
           {status === 0 && <>
-            <button className="btn d" type="button" onClick={() => decide(2)} disabled={busy}>Reject <kbd>R</kbd></button>
-            <button className="btn p" type="button" id="approve" onClick={() => decide(1)} disabled={busy || !canApprove} title={canApprove ? "" : "Photo ID required"}><Check size={16} weight="bold" />Approve <kbd>A</kbd></button>
+            <button className="btn d" type="button" id="reject" onClick={() => setRejecting(true)} disabled={busy}>Reject <kbd>R</kbd></button>
+            <button className="btn p" type="button" id="approve" onClick={approve} disabled={busy || !canApprove} title={canApprove ? "" : "Photo ID required"}><Check size={16} weight="bold" />Approve <kbd>A</kbd></button>
           </>}
           {status === 1 && <button className="btn d" type="button" onClick={() => setBlock(true)} disabled={busy}><Prohibit size={16} />{b.isActive === 1 ? "Block" : "Unblock"}</button>}
-          {status === 2 && <button className="btn" type="button" onClick={() => decide(1)} disabled={busy || !canApprove}>Approve after all</button>}
+          {status === 2 && <button className="btn" type="button" onClick={approve} disabled={busy || !canApprove}>Approve after all</button>}
         </div>
       </div>
       {status === 0 && !canApprove && <div className="note"><Warning size={16} />Approve unlocks once both sides of a photo ID are uploaded.</div>}
@@ -108,14 +110,13 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
         <ul className={s.hours}>{DAYS.map((d, i) => { const a = data.ProviderDetails.availability?.find((x) => x.day === i); return <li key={d}><span>{d}</span>{a?.isOpen ? <span>{clock(a.from)} – {clock(a.to)}</span> : <span className="muted">Closed</span>}</li>; })}</ul>
       </section>
 
-      {status === 0 && (
-        <section className="field">
-          <label htmlFor="rej" className={s.h3}>Reason if rejecting</label>
-          <textarea id="rej" className="input" rows={3} value={reason} aria-invalid={reasonErr} onChange={(e) => { setReason(e.target.value); setReasonErr(false); }}
-            placeholder="Example: The ID photo is blurry. Upload a clear photo of the front." />
-          {reasonErr ? <span className="err">Add a reason so the Buddy knows what to fix.</span>
-            : <span className="hint">Today the Buddy gets the standard rejection email; your reason is sent with it once the server stores it (FEA-45).</span>}
-        </section>
+      {rejecting && (
+        // The server ignores `reason` today and sends a fixed "not approved, contact support" email + app notice (FEA-45).
+        <ReasonDialog title={`Reject ${name}'s application`} onClose={() => setRejecting(false)} onConfirm={(r) => send(2, r)}
+          next={<>{name.split(" ")[0]} gets an email and an app notice saying the account wasn&apos;t approved and to contact AnyBuddy support. You can approve them later from Rejected.</>}
+          label="Reason for rejecting" placeholder="Example: The ID photo is blurry. Upload a clear photo of the front."
+          hint="Write what the Buddy should fix. The server doesn't store or send it yet (FEA-45), so it isn't in their email."
+          confirm="Reject application" />
       )}
 
       {block && (

@@ -13,6 +13,8 @@ export function Modal({ title, onClose, children, footer, drawer = false, sub }:
     const first = box.current?.querySelector<HTMLElement>("[autofocus], input, select, textarea, button:not([data-x])");
     (first ?? box.current)?.focus();
     const key = (e: KeyboardEvent) => {
+      // Stacked dialogs (a confirm over a drawer): only the top one handles Esc and Tab.
+      if (box.current !== [...document.querySelectorAll("[role=dialog]")].at(-1)) return;
       if (e.key === "Escape") onClose();
       if (e.key !== "Tab" || !box.current) return;
       const f = [...box.current.querySelectorAll<HTMLElement>("button:not(:disabled), a[href], input, select, textarea")];
