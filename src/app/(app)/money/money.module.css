@@ -1,0 +1,12 @@
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.kpis > div { border: 1px solid var(--line); border-radius: var(--r2); padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.kpis small { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mute); }
+.kpis b { font-size: var(--fs-h2); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+.stack { display: flex; height: 34px; gap: 2px; border-radius: 8px; overflow: hidden; }
+.stack i { display: flex; align-items: center; justify-content: center; min-width: 28px; color: #fff; font-style: normal; font-size: 12px; font-weight: 600; }
+.legend { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 20px; }
+.legend li { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink2); }
+.legend li span { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.legend b { margin-left: auto; color: var(--ink); }
+@media (max-width: 1180px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .legend { grid-template-columns: 1fr; } .kpis b { font-size: 24px; } }

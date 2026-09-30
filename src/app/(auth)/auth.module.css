@@ -1,0 +1,15 @@
+.page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 56px 16px 40px; position: relative; overflow: hidden; }
+.logo { display: flex; align-items: center; gap: 10px; font-size: var(--fs-lead); z-index: 1; }
+.logo img { object-fit: contain; }
+.badge { font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 2px 7px; border-radius: 6px; background: var(--amber-soft); color: var(--amber-ink); }
+.card { position: relative; z-index: 1; width: min(420px, 100%); background: var(--canvas); border: 1px solid var(--line); border-radius: 16px; padding: 28px 28px 24px; box-shadow: var(--shadow2); display: flex; flex-direction: column; gap: 18px; }
+.h { font-size: 26px; }
+.sub { color: var(--mute); margin-top: -10px; }
+.band { position: absolute; left: -10%; right: -10%; bottom: -120px; height: 46vh; background: linear-gradient(180deg, #2b3c6c, #24345f); border-top: 3px solid var(--amber); transform: skewY(-6deg); }
+.form { display: flex; flex-direction: column; gap: 14px; }
+.row { display: flex; justify-content: space-between; align-items: baseline; }
+.link { font-size: var(--fs-sm); font-weight: 600; color: var(--navy); background: none; border: 0; padding: 0; text-decoration: underline; }
+.code { letter-spacing: .5em; text-align: center; font-size: 22px; font-weight: 600; }
+.pw { position: relative; }
+.pw button { position: absolute; right: 6px; top: 4px; height: 32px; padding: 0 8px; border: 0; background: none; font-size: 13px; font-weight: 600; color: var(--mute); }
+@media (max-width: 720px) { .band { height: 18vh; } .card { box-shadow: none; padding: 20px 4px; border: 0; } }

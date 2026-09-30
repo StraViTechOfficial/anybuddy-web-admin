@@ -1,0 +1,12 @@
+.scrim { position: fixed; inset: 0; background: rgba(12,18,32,.36); z-index: 60; animation: fade .15s; }
+@keyframes fade { from { opacity: 0; } }
+.pal { position: fixed; left: 50%; top: 12vh; transform: translateX(-50%); width: min(640px, calc(100% - 32px)); background: var(--canvas); border: 1px solid var(--line); border-radius: 16px; z-index: 70; box-shadow: var(--shadow2); overflow: hidden; animation: pop .16s var(--ease); }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, 6px) scale(.98); } }
+.pin { display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); color: var(--mute); }
+.pin input { flex: 1; height: 56px; border: 0; outline: none; background: none; font-size: var(--fs-lead); color: var(--ink); }
+.list { list-style: none; margin: 0; padding: 6px; max-height: 52vh; overflow: auto; }
+.g { padding: 10px 10px 4px; font-size: var(--fs-xs); font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mute); }
+.o { padding: 9px 10px; border-radius: 9px; cursor: pointer; }
+.o b { font-weight: 600; }
+.o[aria-selected="true"] { background: var(--navy-1); }
+.foot { display: flex; gap: 14px; padding: 10px 16px; border-top: 1px solid var(--line); font-size: var(--fs-xs); color: var(--mute); }

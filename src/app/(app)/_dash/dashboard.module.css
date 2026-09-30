@@ -1,0 +1,28 @@
+.sum { display: flex; gap: 6px 22px; flex-wrap: wrap; font-size: var(--fs-body); color: var(--ink2); }
+.sum a { text-decoration: none; border-bottom: 1px dashed transparent; }
+.sum a:hover { border-bottom-color: var(--field); }
+.sum b { color: var(--ink); }
+.badText { color: var(--bad) !important; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.kpi { border: 1px solid var(--line); border-radius: var(--r2); padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; text-decoration: none; background: var(--canvas); transition: border-color .15s, box-shadow .15s; }
+a.kpi:hover { border-color: var(--navy-2); box-shadow: var(--shadow1); }
+.kpi small { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mute); }
+.kpi > span:nth-of-type(1) { display: flex; align-items: baseline; gap: 10px; }
+.kpi b { font-size: var(--fs-h2); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+.kpi em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--ok); }
+.kpi em.neg { color: var(--bad); }
+.grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 20px; }
+.bh { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.pad { padding: 10px 18px 0; }
+.att ul { list-style: none; padding: 0; margin: 0; }
+.att li { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--line); }
+.att li:first-child { border-top: 0; }
+.ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex: none; }
+.warn { background: var(--amber-soft); color: var(--amber-ink); }
+.ico.bad { background: var(--bad-soft); color: var(--bad); }
+.info { background: var(--info-soft); color: var(--info); }
+.ok { background: var(--ok-soft); color: var(--ok); }
+.t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.t b { font-weight: 600; }
+@media (max-width: 1180px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .kpis { gap: 10px; } .kpi { padding: 12px 14px; } .kpi b { font-size: 24px; } }

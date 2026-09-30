@@ -1,0 +1,10 @@
+.scrim { position: fixed; inset: 0; background: rgba(12,18,32,.36); z-index: 40; animation: fade .15s; }
+@keyframes fade { from { opacity: 0; } }
+.modal { position: fixed; left: 50%; top: 14vh; transform: translateX(-50%); width: min(480px, calc(100% - 32px)); max-height: 76vh; background: var(--canvas); border-radius: 16px; z-index: 41; box-shadow: var(--shadow2); display: flex; flex-direction: column; animation: pop .18s var(--ease); }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, 6px) scale(.98); } }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(600px, 100%); background: var(--canvas); z-index: 41; box-shadow: var(--shadow2); display: flex; flex-direction: column; animation: slide .24s var(--ease); }
+@keyframes slide { from { transform: translateX(32px); opacity: .4; } }
+.head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.x { margin-left: auto; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 10px; background: var(--canvas); display: grid; place-items: center; color: var(--ink2); flex: none; }
+.body { padding: 18px 22px; overflow: auto; display: flex; flex-direction: column; gap: 18px; flex: 1; }
+.foot { padding: 14px 22px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }

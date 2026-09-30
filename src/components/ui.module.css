@@ -1,0 +1,6 @@
+.head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.crumb { font-size: var(--fs-xs); color: var(--mute); margin-bottom: 6px; }
+.sub { margin-top: 4px; color: var(--mute); }
+.acts { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.empty { padding: 40px 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.eic { width: 44px; height: 44px; border-radius: 12px; background: var(--soft); display: grid; place-items: center; color: var(--mute); }

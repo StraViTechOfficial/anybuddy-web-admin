@@ -1,0 +1,6 @@
+.h3 { font-size: var(--fs-body); font-weight: 600; margin-bottom: 10px; }
+.bankbox { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.bank { display: grid; grid-template-columns: 130px minmax(0, 1fr) 36px; gap: 10px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); min-height: 44px; }
+.bank:first-child { border-top: 0; }
+.bank b { font-weight: 600; overflow-wrap: anywhere; }
+@media (max-width: 720px) { .bank { grid-template-columns: minmax(0, 1fr) 36px; } .bank > span { grid-column: 1 / -1; } }
