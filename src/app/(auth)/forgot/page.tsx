@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { AuthCard } from "../AuthCard";
+import { AuthCard, CODE_LIFE_MS } from "../AuthCard";
 import { useReady } from "@/components/useReady";
 import s from "../auth.module.css";
 
@@ -21,6 +21,7 @@ export default function Forgot() {
     try {
       await api("admin/auth/forgot-password", { method: "POST", body: { email } });
       sessionStorage.setItem("ab_reset_email", email);
+      sessionStorage.setItem("ab_code_until", String(Date.now() + CODE_LIFE_MS));
       window.location.assign("/code");
     } catch (x) {
       setErr((x as Error).message);

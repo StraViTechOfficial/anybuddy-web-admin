@@ -2,7 +2,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { AuthCard } from "../AuthCard";
+import { AuthCard, CODE_LIFE_MS } from "../AuthCard";
 import { useReady } from "@/components/useReady";
 import s from "../auth.module.css";
 
@@ -12,13 +12,20 @@ export default function Code() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
-  const [wait, setWait] = useState(60);
-  useEffect(() => { setEmail(sessionStorage.getItem("ab_reset_email") || ""); }, []);
+  // The server refuses a new code while the last one still works (10 minutes), so the wait is the code's life.
+  // Kept per tab as a time, so a reload keeps the countdown.
+  const [until, setUntil] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const wait = Math.max(0, until - now);
   useEffect(() => {
-    if (wait <= 0) return;
-    const t = setTimeout(() => setWait(wait - 1), 1000);
+    setEmail(sessionStorage.getItem("ab_reset_email") || "");
+    setUntil(Number(sessionStorage.getItem("ab_code_until")) || Date.now() + CODE_LIFE_MS);
+  }, []);
+  useEffect(() => {
+    if (!wait) return;
+    const t = setTimeout(() => setNow(Date.now()), 1000);
     return () => clearTimeout(t);
-  }, [wait]);
+  }, [wait, now]);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,7 +34,7 @@ export default function Code() {
     setBusy(true);
     setErr("");
     try {
-      await api("admin/auth/verify-otp", { method: "POST", body: { otp } });
+      await api("admin/auth/verify-otp", { method: "POST", body: { loginOtp: otp } });
       window.location.assign("/reset");
     } catch (x) {
       setErr((x as Error).message);
@@ -37,7 +44,10 @@ export default function Code() {
   async function resend() {
     try {
       await api("admin/auth/resend-otp", { method: "POST", body: {} });
-      setWait(60);
+      const next = Date.now() + CODE_LIFE_MS;
+      sessionStorage.setItem("ab_code_until", String(next));
+      setUntil(next);
+      setNow(Date.now());
       setErr("");
     } catch (x) {
       setErr((x as Error).message);
@@ -55,7 +65,7 @@ export default function Code() {
         <button className="btn p block" style={{ height: 44 }} disabled={busy || !ready} aria-busy={busy}>{busy ? "Checking…" : "Continue"}</button>
         <div className={s.row}>
           <Link className={s.link} href="/forgot">Use another email</Link>
-          <button type="button" className={s.link} onClick={resend} disabled={wait > 0}>{wait > 0 ? `Send again in ${Math.ceil(wait / 60)} min` : "Send again"}</button>
+          <button type="button" className={s.link} onClick={resend} disabled={wait > 0}>{wait > 0 ? `Send again in ${Math.ceil(wait / 60000)} min` : "Send again"}</button>
         </div>
       </form>
     </AuthCard>
