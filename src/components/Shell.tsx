@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   SquaresFour, UserCheck, User, CalendarBlank, CreditCard, Bank, ChatCircle, GridFour, Bell, Star,
-  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, SidebarSimple, DotsThree, CaretDown,
+  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, DotsThree, CaretDown, CaretLeft, CaretRight,
 } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { payoutAlerts } from "@/app/(app)/payouts/data";
@@ -76,9 +76,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const showMore = moreOpen || inMore;
   // Laptop: the menu can shrink to an icon rail and back; kept per browser (the head script applies it before paint).
+  // The icon follows data-side in CSS (right before hydration); the label follows this state.
+  const [rail, setRail] = useState(false);
+  useEffect(() => { setRail(document.documentElement.dataset.side === "rail"); }, []);
   const toggleSide = () => {
     const r = document.documentElement;
     r.dataset.side = r.dataset.side === "rail" ? "" : "rail";
+    setRail(r.dataset.side === "rail");
     try { localStorage.setItem("ab_side", r.dataset.side); } catch {}
   };
   const link = ({ href, label, icon: Icon, badge, tone }: Item) => (
@@ -94,6 +98,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <a className={s.skip} href="#main">Skip to content</a>
       <aside className={`${s.side} ${open ? s.open : ""}`} aria-label="Admin menu">
         <Link href="/" className={s.brand}><img src="/mark.png" alt="" width={32} height={32} /><b>Any-Buddy</b></Link>
+        <button type="button" className={s.edge} aria-label={rail ? "Expand menu" : "Collapse menu"} title={rail ? "Expand menu" : "Collapse menu"} onClick={toggleSide}>
+          <CaretLeft size={14} weight="bold" className={s.collapse} aria-hidden /><CaretRight size={14} weight="bold" className={s.expand} aria-hidden />
+        </button>
         <nav className={s.navs}>
           <div className={s.grp}>{main(counts).map(link)}</div>
           <div className={s.grp}>
@@ -113,7 +120,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className={s.main}>
         <header className={s.top}>
           <button type="button" className={`${s.ib} ${s.menuBtn}`} aria-label="Open menu" onClick={() => setOpen(!open)}><List size={20} /></button>
-          <button type="button" className={`${s.ib} ${s.sideBtn}`} aria-label="Collapse or expand the menu" title="Collapse or expand the menu" onClick={toggleSide}><SidebarSimple size={20} /></button>
           <button type="button" className={s.cmdk} onClick={() => setPal(true)}>
             <MagnifyingGlass size={16} aria-hidden /><span>Search or jump to…</span><kbd>⌘K</kbd>
           </button>
