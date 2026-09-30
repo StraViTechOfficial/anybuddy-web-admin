@@ -9,6 +9,7 @@ import { TZ, bookingState, fullName, money, when } from "@/lib/format";
 import type { Booking } from "@/lib/types";
 import { PageHead, LoadError, StateChip } from "@/components/ui";
 import { MoneyDrawer } from "./MoneyDrawer";
+import { PlatformPayouts } from "./PlatformPayouts";
 import s from "./money.module.css";
 
 // The booking figures add up what bookings record. Stripe fees and the net to AnyBuddy come from the money ledger
@@ -53,6 +54,7 @@ function Money() {
   return (
     <>
       <PageHead title="Money" sub="Every dollar from the customer's card to the Buddy's bank." />
+      <PlatformPayouts />
       <div className="note"><Info size={16} />The cards and the chart add up what each booking records. Stripe fees and the net to AnyBuddy come from the money ledger.</div>
       <section className={s.kpis}>
         <div><small>Customers paid</small><b>{money(paidIn, true)}</b><span className="hint">{rows.length} bookings, charged up front</span></div>
