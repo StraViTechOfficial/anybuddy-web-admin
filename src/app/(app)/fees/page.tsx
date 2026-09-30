@@ -42,7 +42,7 @@ export default function Fees() {
             <label className="field"><span>Commission (%)</span><input id="fc" className="input" inputMode="decimal" placeholder="0.0" value={f.c} aria-invalid={errs.c} onChange={(e) => setF({ ...f, c: e.target.value })} />
               {errs.c ? <span className="err">Enter a number from 0 to 50, like 12.5.</span> : <span className="hint">Kept from each booking before the Buddy is paid.</span>}</label>
             <label className="field"><span>Sales tax (%)</span><input id="ft" className="input" inputMode="decimal" placeholder="0.0" value={f.t} aria-invalid={errs.t} onChange={(e) => setF({ ...f, t: e.target.value })} />
-              {errs.t ? <span className="err">Enter a number from 0 to 20.</span> : <span className="hint">Added to the customer&apos;s total; AnyBuddy pays it to the state (D-67).</span>}</label>
+              {errs.t ? <span className="err">Enter a number from 0 to 20.</span> : <span className="hint">Added to the customer&apos;s total; AnyBuddy pays it to the state.</span>}</label>
             <button className="btn p" style={{ alignSelf: "flex-start" }} disabled={busy} aria-busy={busy}>{busy ? "Saving…" : "Save rates"}</button>
           </form>
         </section>

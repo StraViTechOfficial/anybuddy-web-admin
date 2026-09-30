@@ -44,7 +44,7 @@ export function CategoryEdit({ data, cat, onClose, onSaved }: { data: Catalog; c
     <Modal title={`Retire ${cat.categoryName}`} onClose={() => setRetire(false)}
       footer={<><button className="btn" onClick={() => setRetire(false)}>Back</button><button className="btn ds" onClick={toggle} disabled={busy}>Retire {cat.categoryName}</button></>}>
       <p>Customers stop seeing {cat.categoryName}. Nothing is deleted: restore it any time from Retired.</p>
-      {count > 0 && <div className="note"><Warning size={16} />Its {count} services can still be booked until the server hides them with the category (BUG-91). Turn them off one by one if that matters today.</div>}
+      {count > 0 && <div className="note"><Warning size={16} />Its {count} services can still be booked until the server hides them with the category. Turn them off one by one if that matters today.</div>}
     </Modal>
   );
 
@@ -55,7 +55,7 @@ export function CategoryEdit({ data, cat, onClose, onSaved }: { data: Catalog; c
         <button className="btn" style={{ marginLeft: "auto" }} onClick={onClose}>Cancel</button><button className="btn p" form="ceF" disabled={busy} aria-busy={busy}>Save changes</button></>}>
       <form id="ceF" onSubmit={save} noValidate className={s.form}>
         <label className="field"><span>Category name</span><input className="input" value={f.name} aria-invalid={!!err} onChange={(e) => { setF({ ...f, name: e.target.value }); setErr(""); }} />
-          {renamed && count > 0 && <span className="flag"><Warning size={12} />Until BUG-90 is fixed, a rename can empty this category&apos;s page in the app.</span>}</label>
+          {renamed && count > 0 && <span className="flag"><Warning size={12} />Renaming can leave this category&apos;s page empty in the app for now. Check it after saving.</span>}</label>
         <label className="field"><span>Description</span><input className="input" value={f.desc} placeholder="Example: Leaks, clogs and fixtures" onChange={(e) => setF({ ...f, desc: e.target.value })} /><span className="hint">One line under the name in the app.</span></label>
         <PhotoPick id="cePhoto" url={f.photo} onChange={(photo) => setF({ ...f, photo })} />
         {pinned(cat.categoryName) && <div className="note"><Lock size={16} />{cat.categoryName} is pinned to the top of the app (owner decision) and can&apos;t be retired.</div>}

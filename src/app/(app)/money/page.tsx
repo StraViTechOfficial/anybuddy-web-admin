@@ -90,7 +90,7 @@ function Money() {
             {SEG.map(([k, l, c]) => sum(k) > 0 && <i key={k} style={{ flex: sum(k), background: `var(${c})` }} title={`${l}: ${money(sum(k), true)}`}><span>{Math.round((sum(k) / total) * 100)}%</span></i>)}
           </div>
           <ul className={s.legend}>{SEG.map(([k, l, c]) => <li key={k}><span style={{ background: `var(${c})` }} />{l}<b>{money(sum(k), true)}</b></li>)}</ul>
-          {sum("gap") > 0 && <div className="note" style={{ marginTop: 14 }}><Warning size={16} />{money(sum("gap"), true)} isn&apos;t traced: {rows.filter((r) => r.m.gap).map((r) => r.b.bookingId).join(", ")} record less for the Buddy than the customer paid, with no commission or tax (BUG-87). The ledger rejects bookings that don&apos;t add up.</div>}
+          {sum("gap") > 0 && <div className="note" style={{ marginTop: 14 }}><Warning size={16} />{money(sum("gap"), true)} isn&apos;t traced: {rows.filter((r) => r.m.gap).map((r) => r.b.bookingId).join(", ")} record less for the Buddy than the customer paid, with no commission or tax. The ledger rejects bookings that don&apos;t add up.</div>}
         </div>
       </section>
       <section className="box">

@@ -40,10 +40,10 @@ export default function Support() {
             {t && (
               <div style={{ padding: 22, display: "flex", flexDirection: "column", gap: 14 }}>
                 <div><h2>{t.name || "No name"}</h2><span className="muted">{t.email}{t.createdAt && ` · ${date(t.createdAt)}`}</span></div>
-                {!validEmail(t.email) && <div className="note"><Warning size={16} />“{t.email}” isn&apos;t a valid email, so a reply can&apos;t reach this person. The Contact form accepts any text (BUG-86).</div>}
+                {!validEmail(t.email) && <div className="note"><Warning size={16} />“{t.email}” isn&apos;t a valid email, so a reply can&apos;t reach this person.</div>}
                 <div style={{ padding: "12px 14px", borderRadius: 14, background: "var(--soft)", border: "1px solid var(--line)", whiteSpace: "pre-wrap" }}>{t.description}</div>
                 {validEmail(t.email) && <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><span className="hint">Reply by email to</span><b>{t.email}</b><button className="btn sm" onClick={() => copy(t.email!)}><Copy size={14} />Copy</button></div>}
-                <p className="hint">Replying here and marking a message resolved need the server to store them (FEA-44).</p>
+                <p className="hint">Replying and marking messages resolved from here aren&apos;t available yet. Reply by email.</p>
               </div>
             )}
           </div>

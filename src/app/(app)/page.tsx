@@ -62,7 +62,7 @@ export default function Dashboard() {
 
       <div className={s.grid}>
         <section className="box"><header className={s.bh}><h2>Booking value per week</h2><span className="hint">Hover a week</span></header>
-          <p className={`flag ${s.pad}`}>Counts canceled bookings too until BUG-96 is fixed. Money shows what was kept.</p>
+          <p className={`flag ${s.pad}`}>Booking counts include canceled ones for now. Money shows only what was kept.</p>
           {d ? <ValueChart graph={d.graph} /> : <div className="skeleton" style={{ height: 220, margin: 18 }} />}
         </section>
         <section className="box"><header className={s.bh}><h2>Bookings by status</h2><span className="hint">{d?.bookings.length ?? "–"} total</span></header>

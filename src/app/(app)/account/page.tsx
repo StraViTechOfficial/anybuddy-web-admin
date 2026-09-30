@@ -41,7 +41,7 @@ export default function Account() {
         <section className="box">
           <header className="bh"><h2>Other devices</h2></header>
           <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 12 }}>
-            <div className="note"><Warning size={16} />Changing the password doesn&apos;t sign out other devices yet (SEC-44). Until that&apos;s fixed, use Forgot password on the log-in page: a reset signs out every other device.</div>
+            <div className="note"><Warning size={16} />Changing the password here doesn&apos;t sign out your other devices. To sign them all out, use Forgot password on the log-in page.</div>
           </div>
         </section>
       </div>

@@ -49,7 +49,7 @@ function Payouts() {
         </div></div>
         {list.error ? <LoadError message={list.error} retry={list.reload} /> : tab === "stripe" ? (
           <>
-            <p className="hint" style={{ padding: "12px 18px 0" }}>Jobs whose Stripe payout failed. Used once Stripe Connect is switched on (D-70).</p>
+            <p className="hint" style={{ padding: "12px 18px 0" }}>Jobs whose Stripe payout failed. Ask the Buddy to update their bank details.</p>
             {stripe.length ? <table className="stack"><thead><tr><th>Buddy</th><th>Job</th><th className="r">Amount</th><th className="hs">Checked out</th></tr></thead>
               <tbody>{stripe.map((r) => <tr key={r._id}><td>{fullName(r.vendorId)}</td><td><Link className="mono" href={`/bookings?open=${r._id}`}>{r.bookingId}</Link></td><td className="r">{money(r.payoutAmount ?? 0)}</td><td className="hs">{r.checkOutAt ? date(r.checkOutAt) : "—"}</td></tr>)}</tbody></table>
               : <Empty icon={CheckCircle} title="No failed Stripe payouts" />}

@@ -74,7 +74,7 @@ export default function CatalogPage() {
             })}
             {loading && !data && <li className="skeleton" style={{ height: 200, margin: 10 }} />}
           </ol>
-          <p className={`hint ${s.pad}`}>Plumbing and Electrical stay first, the rest A–Z. Choosing your own order needs FEA-42.</p>
+          <p className={`hint ${s.pad}`}>Plumbing and Electrical stay first, the rest A–Z.</p>
           <div className={s.pad}><button className={s.addrow} onClick={() => setOpen({ kind: "wizard" })}><Plus size={16} />New category</button></div>
           {!!data?.retired.length && <details className={s.retired}><summary>Retired · {data.retired.length}</summary>
             <ul>{data.retired.map((c) => <li key={c._id}><span>{c.categoryName}</span><button className="btn sm" onClick={() => setOpen({ kind: "cat", cat: c })}>Open</button></li>)}</ul></details>}

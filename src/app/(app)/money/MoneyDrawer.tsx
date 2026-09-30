@@ -14,7 +14,7 @@ type Trail = { _id: string; bookingId: string | null; hasLedger: boolean; lines:
 export type Recorded = { paid: number; refunded: number; tax: number; fee: number; earned: number };
 
 const time = (d: string) => `${date(d)} · ${new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(new Date(d))}`;
-const SECTIONS = [["in", "In", "From the customer"], ["out", "Out", "Refunds, Stripe fees, the Buddy's share and tax held"], ["recovered", "Recovered", "Stripe fees taken back from the Buddy (D-31)"]] as const;
+const SECTIONS = [["in", "In", "From the customer"], ["out", "Out", "Refunds, Stripe fees, the Buddy's share and tax held"], ["recovered", "Recovered", "Stripe fees taken back from the Buddy"]] as const;
 
 /** One booking's money statement from the ledger: In − Out + Recovered = Net to AnyBuddy. */
 export function MoneyDrawer({ id, code, recorded, onClose }: { id: string; code: string; recorded: Recorded; onClose: () => void }) {

@@ -115,7 +115,7 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
         <ReasonDialog title={`Reject ${name}'s application`} onClose={() => setRejecting(false)} onConfirm={(r) => send(2, r)}
           next={<>{name.split(" ")[0]} gets an email and an app notice saying the account wasn&apos;t approved and to contact AnyBuddy support. You can approve them later from Rejected.</>}
           label="Reason for rejecting" placeholder="Example: The ID photo is blurry. Upload a clear photo of the front."
-          hint="Write what the Buddy should fix. The server doesn't store or send it yet (FEA-45), so it isn't in their email."
+          hint="For your records. It isn't sent to the Buddy yet."
           confirm="Reject application" />
       )}
 
@@ -123,7 +123,7 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
         <Modal title={b.isActive === 1 ? `Block ${name}` : `Unblock ${name}`} onClose={() => setBlock(false)}
           footer={<><button className="btn" onClick={() => setBlock(false)}>Back</button><button className={`btn ${b.isActive === 1 ? "ds" : "p"}`} onClick={toggleActive} disabled={busy}>{b.isActive === 1 ? "Block" : "Unblock"}</button></>}>
           {b.isActive === 1
-            ? <><p>{name.split(" ")[0]} can't sign in or take new jobs.</p><div className="note"><Warning size={16} />Owner rule D-66: their upcoming paid jobs are canceled and refunded. The server doesn't do that yet (BUG-95), so check Bookings for their open jobs.</div></>
+            ? <><p>{name.split(" ")[0]} can't sign in or take new jobs.</p><div className="note"><Warning size={16} />Their upcoming paid jobs need to be canceled and refunded. Check Bookings for their open jobs.</div></>
             : <p>{name.split(" ")[0]} can sign in and take jobs again.</p>}
         </Modal>
       )}

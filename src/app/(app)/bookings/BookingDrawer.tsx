@@ -78,7 +78,7 @@ export function BookingDrawer({ id, onClose }: { id: string; onClose: () => void
         {!!(b.checkInImages?.length || b.checkOutImages?.length) && (
           <section><h3 className={s.h3}>Job photos</h3><div className={s.photos}>{[...(b.checkInImages ?? []), ...(b.checkOutImages ?? [])].map((u) => <a key={u} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="Job photo" /></a>)}</div></section>
         )}
-        {(b.status === 1 || b.status === 2) && <div className="note"><Info size={16} />Canceling or refunding from the admin needs the admin endpoint (FEA-43). Until then the customer or Buddy cancels in their app.</div>}
+        {(b.status === 1 || b.status === 2) && <div className="note"><Info size={16} />Canceling or refunding from here isn't available yet. The customer or Buddy can cancel in their app.</div>}
       </>}
     </Modal>
   );
