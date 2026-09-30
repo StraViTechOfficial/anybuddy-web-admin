@@ -16,7 +16,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-US" className={text.variable} suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("ab_theme");if(t)document.documentElement.dataset.theme=t}catch(e){}` }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: `try{var d=document.documentElement,t=localStorage.getItem("ab_theme"),s=localStorage.getItem("ab_side");if(t)d.dataset.theme=t;if(s)d.dataset.side=s}catch(e){}` }} /></head>
       <body>
         <ToastProvider>{children}</ToastProvider>
       </body>

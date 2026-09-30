@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   SquaresFour, UserCheck, User, CalendarBlank, CreditCard, Bank, ChatCircle, GridFour, Bell, Star,
-  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut,
+  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, SidebarSimple, DotsThree, CaretDown,
 } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { Palette } from "./Palette";
@@ -13,23 +13,22 @@ import s from "./Shell.module.css";
 type Counts = { buddies?: number; requests?: number; support?: number; fees?: boolean; payouts?: number };
 type Item = { href: string; label: string; icon: React.ElementType; badge?: number | string; tone?: "b" | "r" };
 
-// Menu groups match the approved prototype (D-61, D-69).
-const menu = (c: Counts): [string | null, Item[]][] => [
-  [null, [{ href: "/", label: "Dashboard", icon: SquaresFour }]],
-  ["People", [{ href: "/buddies", label: "Buddies", icon: UserCheck, badge: c.buddies }, { href: "/customers", label: "Customers", icon: User }]],
-  ["Operations", [
-    { href: "/bookings", label: "Bookings", icon: CalendarBlank, badge: c.requests, tone: "b" },
-    { href: "/payouts", label: "Payouts", icon: CreditCard, badge: c.payouts, tone: "r" },
-    { href: "/money", label: "Money", icon: Bank },
-    { href: "/support", label: "Support", icon: ChatCircle, badge: c.support, tone: "b" },
-  ]],
-  ["Catalog", [{ href: "/catalog", label: "Categories & services", icon: GridFour }]],
-  ["Engage", [{ href: "/notifications", label: "Notifications", icon: Bell }, { href: "/reviews", label: "Reviews", icon: Star }]],
-  ["Settings", [
-    { href: "/fees", label: "Fees & tax", icon: Percent, badge: c.fees === false ? "!" : undefined, tone: "r" },
-    { href: "/content", label: "Content pages", icon: FileText },
-    { href: "/account", label: "Account & security", icon: Gear },
-  ]],
+// Daily work stays in view; occasional pages sit under More (owner, 30 Sep 2026, like Stripe/Shopify admin menus).
+const main = (c: Counts): Item[] => [
+  { href: "/", label: "Dashboard", icon: SquaresFour },
+  { href: "/payouts", label: "Payouts", icon: CreditCard, badge: c.payouts, tone: "r" },
+  { href: "/bookings", label: "Bookings", icon: CalendarBlank, badge: c.requests, tone: "b" },
+  { href: "/buddies", label: "Buddies", icon: UserCheck, badge: c.buddies },
+  { href: "/customers", label: "Customers", icon: User },
+  { href: "/support", label: "Support", icon: ChatCircle, badge: c.support, tone: "b" },
+];
+const more = (c: Counts): Item[] => [
+  { href: "/reviews", label: "Reviews", icon: Star },
+  { href: "/catalog", label: "Categories & services", icon: GridFour },
+  { href: "/content", label: "Content pages", icon: FileText },
+  { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/money", label: "Money", icon: Bank },
+  { href: "/fees", label: "Fees & tax", icon: Percent, badge: c.fees === false ? "!" : undefined, tone: "r" },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -71,31 +70,49 @@ export function Shell({ children }: { children: React.ReactNode }) {
     window.location.assign("/login");
   }
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  const extra = more(counts);
+  const inMore = extra.some((i) => active(i.href));
+  const [moreOpen, setMoreOpen] = useState(false);
+  const showMore = moreOpen || inMore;
+  // Laptop: the menu can shrink to an icon rail and back; kept per browser (the head script applies it before paint).
+  const toggleSide = () => {
+    const r = document.documentElement;
+    r.dataset.side = r.dataset.side === "rail" ? "" : "rail";
+    try { localStorage.setItem("ab_side", r.dataset.side); } catch {}
+  };
+  const link = ({ href, label, icon: Icon, badge, tone }: Item) => (
+    <Link key={href} href={href} className={s.nav} aria-current={active(href) ? "page" : undefined} title={label}>
+      <Icon size={18} weight={active(href) ? "fill" : "regular"} aria-hidden />
+      <span className={s.lbl}>{label}</span>
+      {badge ? <span className={`${s.n} ${tone ? s[tone] : ""}`}>{badge}</span> : null}
+    </Link>
+  );
 
   return (
     <div className={s.app}>
       <a className={s.skip} href="#main">Skip to content</a>
       <aside className={`${s.side} ${open ? s.open : ""}`} aria-label="Admin menu">
-        <Link href="/" className={s.brand}><img src="/mark.png" alt="" width={32} height={32} /><b>Any-Buddy</b><span className={s.badge}>ADMIN</span></Link>
+        <Link href="/" className={s.brand}><img src="/mark.png" alt="" width={32} height={32} /><b>Any-Buddy</b></Link>
         <nav className={s.navs}>
-          {menu(counts).map(([g, items], i) => (
-            <div key={i} className={s.grp}>
-              {g && <small>{g}</small>}
-              {items.map(({ href, label, icon: Icon, badge, tone }) => (
-                <Link key={href} href={href} className={s.nav} aria-current={active(href) ? "page" : undefined} title={label}>
-                  <Icon size={18} weight={active(href) ? "fill" : "regular"} aria-hidden />
-                  <span className={s.lbl}>{label}</span>
-                  {badge ? <span className={`${s.n} ${tone ? s[tone] : ""}`}>{badge}</span> : null}
-                </Link>
-              ))}
-            </div>
-          ))}
+          <div className={s.grp}>{main(counts).map(link)}</div>
+          <div className={s.grp}>
+            <button type="button" className={s.nav} aria-expanded={showMore} onClick={() => setMoreOpen(!showMore)} title="More">
+              <DotsThree size={18} weight="bold" aria-hidden />
+              <span className={s.lbl}>More</span>
+              {!showMore && extra.some((i) => i.badge) ? <span className={`${s.n} ${s.r}`}>!</span> : <CaretDown size={14} className={`${s.caret} ${showMore ? s.up : ""}`} aria-hidden />}
+            </button>
+            {showMore && extra.map(link)}
+          </div>
         </nav>
-        <button type="button" className={s.me} onClick={logout}><SignOut size={18} aria-hidden /><span className={s.lbl}>Log out</span></button>
+        <div className={s.foot}>
+          {link({ href: "/account", label: "Account & security", icon: Gear })}
+          <button type="button" className={`${s.nav} ${s.out}`} onClick={logout} title="Log out"><SignOut size={18} aria-hidden /><span className={s.lbl}>Log out</span></button>
+        </div>
       </aside>
       <div className={s.main}>
         <header className={s.top}>
           <button type="button" className={`${s.ib} ${s.menuBtn}`} aria-label="Open menu" onClick={() => setOpen(!open)}><List size={20} /></button>
+          <button type="button" className={`${s.ib} ${s.sideBtn}`} aria-label="Collapse or expand the menu" title="Collapse or expand the menu" onClick={toggleSide}><SidebarSimple size={20} /></button>
           <button type="button" className={s.cmdk} onClick={() => setPal(true)}>
             <MagnifyingGlass size={16} aria-hidden /><span>Search or jump to…</span><kbd>⌘K</kbd>
           </button>
