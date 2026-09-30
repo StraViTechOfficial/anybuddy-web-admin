@@ -47,6 +47,12 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   const token = code && CODE_ROUTES.test(path) ? code : reset && path === "admin/auth/reset-password" ? reset : jar.get(SESSION)?.value;
   const headers = new Headers({ "content-type": "application/json" });
   if (token) headers.set("authtoken", token);
+  // The browser's address, for per-person rate limits (the backend trusts it only with the shared key; unset, nothing extra).
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip");
+  if (process.env.PROXY_SHARED_SECRET && ip) {
+    headers.set("x-ab-proxy-key", process.env.PROXY_SHARED_SECRET);
+    headers.set("x-ab-client-ip", ip);
+  }
 
   let upstream: Response;
   try {
