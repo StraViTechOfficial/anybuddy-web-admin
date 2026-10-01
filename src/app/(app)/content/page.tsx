@@ -6,9 +6,13 @@ import { PageHead, LoadError } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 
 const PAGES = [[1, "About us"], [2, "Terms of use"], [3, "Privacy policy"]] as const;
-type Cms = { content?: string } | { content?: string }[];
+// The server wraps the saved record: data.content is { _id, content: "<html>" }, not the text itself.
+type Cms = { content?: string | { content?: string } } | { content?: string }[];
 // Stored as the text customers see. Saving publishes at once; the apps show it on their next open.
-const text = (d: Cms | null | undefined) => (Array.isArray(d) ? d[0]?.content : d?.content) ?? "";
+const text = (d: Cms | null | undefined) => {
+  const c = Array.isArray(d) ? d[0]?.content : d?.content;
+  return (typeof c === "object" ? c?.content : c) ?? "";
+};
 
 export default function Content() {
   const toast = useToast();
