@@ -29,7 +29,7 @@ const more = (c: Counts): Item[] => [
   { href: "/content", label: "Content pages", icon: FileText },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/money", label: "Money", icon: Bank },
-  { href: "/fees", label: "Fees & tax", icon: Percent, badge: c.fees === false ? "!" : undefined, tone: "r" },
+  { href: "/fees", label: "Fees & settings", icon: Percent, badge: c.fees === false ? "!" : undefined, tone: "r" },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
