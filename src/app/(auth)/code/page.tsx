@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
-import { AuthCard, CODE_LIFE_MS } from "../AuthCard";
+import { api, ApiError } from "@/lib/api";
+import { AuthCard } from "../AuthCard";
 import { useReady } from "@/components/useReady";
 import s from "../auth.module.css";
 
@@ -12,20 +12,20 @@ export default function Code() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
-  // The server refuses a new code while the last one still works (10 minutes), so the wait is the code's life.
-  // Kept per tab as a time, so a reload keeps the countdown.
+  // The server says how long until a new code may be sent (codeValidFor, seconds). Kept per tab as a time, so a reload
+  // keeps the countdown; with none stored the button is ready and a live code answers 429 with the seconds left.
   const [until, setUntil] = useState(0);
   const [now, setNow] = useState(() => Date.now());
-  const wait = Math.max(0, until - now);
+  const left = Math.ceil(Math.max(0, until - now) / 1000);
   useEffect(() => {
     setEmail(sessionStorage.getItem("ab_reset_email") || "");
-    setUntil(Number(sessionStorage.getItem("ab_code_until")) || Date.now() + CODE_LIFE_MS);
+    setUntil(Number(sessionStorage.getItem("ab_code_until")) || 0);
   }, []);
   useEffect(() => {
-    if (!wait) return;
+    if (!left) return;
     const t = setTimeout(() => setNow(Date.now()), 1000);
     return () => clearTimeout(t);
-  }, [wait, now]);
+  }, [left, now]);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -41,15 +41,20 @@ export default function Code() {
       setBusy(false);
     }
   }
+  function wait(seconds?: number) {
+    const next = Date.now() + (seconds ?? 30) * 1000;
+    sessionStorage.setItem("ab_code_until", String(next));
+    setUntil(next);
+    setNow(Date.now());
+  }
   async function resend() {
     try {
-      await api("admin/auth/resend-otp", { method: "POST", body: {} });
-      const next = Date.now() + CODE_LIFE_MS;
-      sessionStorage.setItem("ab_code_until", String(next));
-      setUntil(next);
-      setNow(Date.now());
+      const { data } = await api<{ codeValidFor?: number } | null>("admin/auth/resend-otp", { method: "POST", body: {} });
+      wait(data?.codeValidFor);
       setErr("");
     } catch (x) {
+      // Only 429 means "already sent": the last code still works, and the reply says for how long.
+      if (x instanceof ApiError && x.status === 429) wait((x.data as { codeValidFor?: number } | undefined)?.codeValidFor);
       setErr((x as Error).message);
     }
   }
@@ -65,7 +70,7 @@ export default function Code() {
         <button className="btn p block" style={{ height: 44 }} disabled={busy || !ready} aria-busy={busy}>{busy ? "Checking…" : "Continue"}</button>
         <div className={s.row}>
           <Link className={s.link} href="/forgot">Use another email</Link>
-          <button type="button" className={s.link} onClick={resend} disabled={wait > 0}>{wait > 0 ? `Send again in ${Math.ceil(wait / 60000)} min` : "Send again"}</button>
+          <button type="button" className={s.link} onClick={resend} disabled={left > 0}>{left > 0 ? `Send again in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "Send again"}</button>
         </div>
       </form>
     </AuthCard>

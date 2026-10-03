@@ -1,10 +1,15 @@
 import { api } from "@/lib/api";
 
-export type Category = { _id: string; categoryName: string; description?: string; icon?: string; image?: string; isActive: number; subcategoryCount?: number };
+export type Category = {
+  _id: string; categoryName: string; description?: string; icon?: string; image?: string; isActive: number; subcategoryCount?: number;
+  licenceRequired?: boolean; licenceName?: string; rateMin?: number | null; rateMax?: number | null; // hourly dollars, null = no limit
+};
+/** A Buddy's hourly offer outside its category's rate range (the server lists them, never changes them). */
+export type OutOfRange = { serviceId: string; serviceName: string; price: number | null; categoryId: string; categoryName: string; rateMin: number | null; rateMax: number | null; vendorId: string; firstName?: string; lastName?: string };
 export type Steps = { taskLocation?: boolean; yourTask?: boolean; describe?: boolean; vehicle?: boolean; startAddress?: boolean; endAddress?: boolean };
 export type Service = { _id: string; serviceName: string; description?: string; icon?: string; image?: string; isActive: number; categoryId: string; categoryName?: string; serviceTaskArr?: Steps | null };
 export type Price = { fromPrice: number; priceUnit: "hour" | "day" | null };
-export type Catalog = { cats: Category[]; retired: Category[]; services: Service[]; prices: Record<string, Price> };
+export type Catalog = { cats: Category[]; retired: Category[]; services: Service[]; prices: Record<string, Price>; outOfRange: OutOfRange[] };
 
 export const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 // Same order rule as the customer apps (services/user/homepage.ts byCategoryPriority): Plumbing, Electrical, then A–Z.
@@ -20,17 +25,22 @@ export const stepsBody = (x: { describe: boolean; vehicle: boolean; route: boole
   ({ taskLocation: true, yourTask: true, describe: x.describe, vehicle: x.vehicle, startAddress: x.route, endAddress: x.route });
 
 export async function loadCatalog(): Promise<Catalog> {
-  const [on, off, svcOn, svcOff, home] = await Promise.all([
+  const [on, off, svcOn, svcOff, home, out] = await Promise.all([
     api<Category[]>("admin/categories/list", { query: { status: 1, limit: 100 } }),
     api<Category[]>("admin/categories/list", { query: { status: 0, limit: 100 } }).catch(() => ({ data: [] as Category[] })),
     api<Service[]>("admin/services/list", { query: { status: 1, limit: 500 } }),
     api<Service[]>("admin/services/list", { query: { status: 0, limit: 500 } }).catch(() => ({ data: [] as Service[] })),
     api<{ services: { services: { serviceName: string; fromPrice: number; priceUnit: Price["priceUnit"] }[] }[] }>("user/homepage").catch(() => null),
+    api<OutOfRange[]>("admin/categories/out-of-range").catch(() => null),
   ]);
   const prices: Record<string, Price> = {};
   for (const g of home?.data.services ?? []) for (const x of g.services) if (x.fromPrice > 0) prices[x.serviceName] = { fromPrice: x.fromPrice, priceUnit: x.priceUnit };
-  return { cats: (on.data || []).sort(byPriority), retired: off.data || [], services: [...(svcOn.data || []), ...(svcOff.data || [])], prices };
+  return { cats: (on.data || []).sort(byPriority), retired: off.data || [], services: [...(svcOn.data || []), ...(svcOff.data || [])], prices, outOfRange: out?.data || [] };
 }
+
+/** "$40–$90/hr", "From $40/hr", "Up to $90/hr" or "" (no range). */
+export const rangeText = (min?: number | null, max?: number | null) =>
+  min != null && max != null ? `$${min}–$${max}/hr` : min != null ? `From $${min}/hr` : max != null ? `Up to $${max}/hr` : "";
 
 /** Friendlier words for the server's own messages. */
 export const say = (e: unknown) => {

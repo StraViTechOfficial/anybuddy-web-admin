@@ -7,7 +7,7 @@ import { plural } from "@/lib/format";
 import { loadCatalog, norm, pinned, priceText, type Category, type Service } from "./data";
 import { ServiceForm } from "./ServiceForm";
 import { CategoryWizard } from "./CategoryWizard";
-import { CategoryEdit } from "./CategoryEdit";
+import { CategoryEdit, OutOfRangeNote } from "./CategoryEdit";
 import s from "./catalog.module.css";
 
 type Open = { kind: "svc"; svc?: Service; cat?: string; name?: string } | { kind: "wizard" } | { kind: "cat"; cat: Category } | null;
@@ -57,6 +57,8 @@ export default function CatalogPage() {
           </ol>
         </section>
       )}
+
+      {data && <OutOfRangeNote rows={data.outOfRange} />}
 
       <div className={s.cat3}>
         <section className="box" aria-label="Categories">

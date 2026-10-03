@@ -4,8 +4,9 @@ import { Check, X, Plus } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 import { Modal } from "@/components/Modal";
-import { byPriority, norm, say, stepsBody, type Catalog, type Category } from "./data";
+import { byPriority, norm, rangeText, say, stepsBody, type Catalog, type Category } from "./data";
 import { PhotoPick } from "./PhotoPick";
+import { RulesFields, rulesBody, rulesOf, rulesProblem } from "./CategoryEdit";
 import s from "./catalog.module.css";
 
 const STEPS = ["Name & look", "Services", "Check & create"];
@@ -15,6 +16,8 @@ export function CategoryWizard({ data, onClose, onCreated }: { data: Catalog; on
   const toast = useToast();
   const [step, setStep] = useState(1);
   const [w, setW] = useState({ name: "", desc: "", photo: "" as string | undefined, services: [] as string[] });
+  const [rules, setRules] = useState(rulesOf());
+  const [rateErr, setRateErr] = useState("");
   const [svc, setSvc] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState<string>();
@@ -27,6 +30,8 @@ export function CategoryWizard({ data, onClose, onCreated }: { data: Catalog; on
       const t = taken(w.name);
       if (t) return setErr(`${t.categoryName} already exists${data.retired.includes(t) ? " in Retired. Open it there to restore it." : "."}`);
       if (!w.desc.trim()) return setErr("Add a one-line description.");
+      const bad = rulesProblem(rules);
+      if (bad) return setRateErr(bad);
     }
     if (step === 2 && !w.services.length) return setErr("Add at least one service.");
     setErr("");
@@ -44,7 +49,7 @@ export function CategoryWizard({ data, onClose, onCreated }: { data: Catalog; on
     const name = w.name.trim();
     try {
       setBusy("Creating the category…");
-      await api("admin/categories/add", { method: "POST", body: { categoryName: name, description: w.desc.trim(), image: w.photo, icon: w.photo } });
+      await api("admin/categories/add", { method: "POST", body: { categoryName: name, description: w.desc.trim(), image: w.photo, icon: w.photo, ...rulesBody(rules) } });
       // The add reply has no id, so look the new category up by name.
       const { data: found } = await api<Category[]>("admin/categories/list", { query: { search: name, status: 1, limit: 10 } });
       const cat = found.find((c) => norm(c.categoryName) === norm(name));
@@ -72,6 +77,7 @@ export function CategoryWizard({ data, onClose, onCreated }: { data: Catalog; on
           <label className="field"><span>Category name</span><input className="input" autoFocus value={w.name} aria-invalid={!!err} placeholder="Example: Handyman" onChange={(e) => { setW({ ...w, name: e.target.value }); setErr(""); }} /></label>
           <label className="field"><span>Description</span><input className="input" value={w.desc} placeholder="Example: Small repairs around the house" onChange={(e) => setW({ ...w, desc: e.target.value })} /><span className="hint">One line under the name in the app.</span></label>
           <PhotoPick id="wzPhoto" url={w.photo} onChange={(photo) => setW({ ...w, photo })} />
+          <RulesFields name={w.name} r={rules} set={(r) => { setRules(r); setRateErr(""); }} err={rateErr} count={0} />
         </>}
         {step === 2 && <>
           <p className="muted">Add the jobs customers can book in <b>{w.name}</b>. Photos and booking steps for each come after, from its service list.</p>
@@ -82,7 +88,7 @@ export function CategoryWizard({ data, onClose, onCreated }: { data: Catalog; on
           <ul className={s.chiplist} aria-label="Services to add">{w.services.map((n, i) => <li key={n}>{n}<button type="button" aria-label={`Remove ${n}`} onClick={() => setW({ ...w, services: w.services.filter((_, j) => j !== i) })}><X size={12} /></button></li>)}</ul>
         </>}
         {step === 3 && <>
-          <div className={s.money}><div><span>Name</span><b>{w.name}</b></div><div><span>Services</span><span>{w.services.join(", ")}</span></div><div><span>Place in the app</span><span>#{order.findIndex((c) => c._id === "new") + 1}, by name after Plumbing and Electrical</span></div><div><span>Shows to customers</span><span>When a Buddy offers one of its services</span></div></div>
+          <div className={s.money}><div><span>Name</span><b>{w.name}</b></div><div><span>Services</span><span>{w.services.join(", ")}</span></div><div><span>License</span><span>{rules.licenceRequired ? rules.licenceName.trim() || `${w.name.trim()} license` : "Not required"}</span></div><div><span>Hourly rate</span><span>{rangeText(rulesBody(rules).rateMin, rulesBody(rules).rateMax) || "No limit"}</span></div><div><span>Place in the app</span><span>#{order.findIndex((c) => c._id === "new") + 1}, by name after Plumbing and Electrical</span></div><div><span>Shows to customers</span><span>When a Buddy offers one of its services</span></div></div>
           <div className={s.chips}>{order.map((c) => <span key={c._id} className={c._id === "new" ? s.on : ""}>{c.categoryName}</span>)}</div>
         </>}
         {err && <p className="err" role="alert">{err}</p>}

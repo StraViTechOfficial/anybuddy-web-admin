@@ -9,7 +9,7 @@ import s from "./Palette.module.css";
 type Opt = { group: string; label: string; sub?: string; href: string };
 const PAGES: Opt[] = [
   ["Dashboard", "/"], ["Buddies", "/buddies"], ["Customers", "/customers"], ["Bookings", "/bookings"], ["Payouts", "/payouts"],
-  ["Money", "/money"], ["Support", "/support"], ["Categories & services", "/catalog"], ["Notifications", "/notifications"],
+  ["Money", "/money"], ["Support", "/support"], ["Categories & services", "/catalog"], ["New sign-ups", "/signups"], ["Waitlist", "/waitlist"], ["Notifications", "/notifications"],
   ["Reviews", "/reviews"], ["Fees & settings", "/fees"], ["Content pages", "/content"], ["Account & security", "/account"],
 ].map(([label, href]) => ({ group: "Pages", label, href }));
 type Person = { _id: string; firstName?: string; lastName?: string; email?: string };

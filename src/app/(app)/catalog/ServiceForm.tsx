@@ -72,7 +72,7 @@ export function ServiceForm({ data, svc, catId, name, onClose, onSaved }: {
   );
 }
 
-function Toggle({ icon: Icon, label, help, on, set }: { icon: React.ElementType; label: string; help: string; on: boolean; set: (v: boolean) => void }) {
+export function Toggle({ icon: Icon, label, help, on, set }: { icon: React.ElementType; label: string; help: string; on: boolean; set: (v: boolean) => void }) {
   return (
     <li><Icon size={18} /><span><b>{label}</b><small>{help}</small></span>
       <label className={s.switch}><input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} aria-label={label} /><span /></label></li>

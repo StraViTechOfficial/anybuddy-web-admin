@@ -3,8 +3,8 @@ import { useCallback, useRef, useState } from "react";
 import { Modal } from "./Modal";
 
 /** Confirm step for one negative action (reject, cancel…) with its reason. Opens only after the admin picks that action. */
-export function ReasonDialog({ title, next, label, placeholder, hint, required, missing, confirm, onConfirm, onClose }: {
-  title: string; next: React.ReactNode; label: string; placeholder?: string; hint: string;
+export function ReasonDialog({ title, next, label, placeholder, hint, required, missing, max, confirm, onConfirm, onClose }: {
+  title: string; next: React.ReactNode; label: string; placeholder?: string; hint: string; max?: number;
   required?: boolean; missing?: string; confirm: string; onConfirm: (reason: string) => Promise<void>; onClose: () => void;
 }) {
   const [text, setText] = useState("");
@@ -28,7 +28,7 @@ export function ReasonDialog({ title, next, label, placeholder, hint, required, 
       <p>{next}</p>
       <form id="rsnF" className="field" onSubmit={submit} noValidate>
         <label htmlFor="rsn" style={{ fontWeight: 600 }}>{label}{!required && <span className="hint"> · optional</span>}</label>
-        <textarea id="rsn" className="input" rows={3} autoFocus value={text} placeholder={placeholder} aria-invalid={!!err} aria-describedby="rsnH"
+        <textarea id="rsn" className="input" rows={3} autoFocus value={text} maxLength={max} placeholder={placeholder} aria-invalid={!!err} aria-describedby="rsnH"
           onChange={(e) => { setText(e.target.value); setErr(""); }} />
         {err ? <span id="rsnH" className="err" role="alert">{err}</span> : <span id="rsnH" className="hint">{hint}</span>}
       </form>

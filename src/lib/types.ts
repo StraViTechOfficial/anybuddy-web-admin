@@ -23,6 +23,7 @@ export type Booking = {
 };
 
 export type Buddy = Person & {
+  middleName?: string | null;
   postalCode?: string;
   address?: { street?: string; city?: string; state?: string };
   IdProofFront?: string | null;

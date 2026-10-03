@@ -33,6 +33,11 @@
 .offers, .hours { list-style: none; padding: 0; border: 1px solid var(--line); border-radius: 12px; }
 .offers li, .hours li { display: flex; justify-content: space-between; padding: 9px 14px; border-top: 1px solid var(--line); }
 .offers li:first-child, .hours li:first-child { border-top: 0; }
+.offers li.lic { align-items: center; gap: 10px; flex-wrap: wrap; }
+.licm { flex: 1; min-width: 180px; display: flex; flex-direction: column; }
+.licm b { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
+.licm small { font-size: 13px; }
+.lica { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .hours { display: grid; grid-template-columns: 1fr 1fr; }
 .hours li:nth-child(2) { border-top: 0; }
 .bulk { position: sticky; bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 10px 18px; background: var(--navy); color: var(--canvas); border-radius: 12px; box-shadow: var(--shadow2); }

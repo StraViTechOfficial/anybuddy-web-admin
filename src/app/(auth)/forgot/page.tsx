@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { AuthCard, CODE_LIFE_MS } from "../AuthCard";
+import { AuthCard } from "../AuthCard";
 import { useReady } from "@/components/useReady";
 import s from "../auth.module.css";
 
@@ -19,9 +19,10 @@ export default function Forgot() {
     setBusy(true);
     setErr("");
     try {
-      await api("admin/auth/forgot-password", { method: "POST", body: { email } });
+      // codeValidFor: seconds until "Send again" works (30 on a new code, what's left on a live one). Older servers send none.
+      const { data } = await api<{ codeValidFor?: number } | null>("admin/auth/forgot-password", { method: "POST", body: { email } });
       sessionStorage.setItem("ab_reset_email", email);
-      sessionStorage.setItem("ab_code_until", String(Date.now() + CODE_LIFE_MS));
+      sessionStorage.setItem("ab_code_until", String(Date.now() + (data?.codeValidFor ?? 30) * 1000));
       window.location.assign("/code");
     } catch (x) {
       setErr((x as Error).message);

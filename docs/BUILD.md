@@ -20,10 +20,11 @@ last 4 on the way through. Dot-segment paths are refused.
 |---|---|---|
 | Sign-in, forgot, code, reset | yes | SEC-43 (reset needs the code token server-side) |
 | Dashboard | yes | BUG-96 (revenue counts canceled bookings) |
-| Buddies (review queue, detail, block) | yes | FEA-45 reject reason stored, BUG-100 status in detail, BUG-95 block cancels jobs |
-| Categories & services | yes (add, edit, wizard, retire) | FEA-42 own order, FEA-46 From price in admin API, BUG-90/91 |
+| Buddies (review queue, detail, block, licenses per category, travel distance, onboarding checklist) | yes | FEA-45 reject reason stored, BUG-100 status in detail, BUG-95 block cancels jobs |
+| Categories & services | yes (add, edit, wizard, retire, license switch + rate range, out-of-range list) | FEA-42 own order, FEA-46 From price in admin API, BUG-90/91 |
 | Bookings | yes, retry failed refund | FEA-43 admin cancel / refund |
 | Customers | yes, block | – |
+| Waitlist | list + CSV export (Buddy onboarding v2, AD4) | – |
 | Payouts | failed / waiting queue (Stripe Connect, D-70) | FEA-41 retry |
 | Money | totals from bookings | FEA-47 ledger endpoints (/api/admin/money/*) |
 | Support | read, reply by email | FEA-44 replies + status |

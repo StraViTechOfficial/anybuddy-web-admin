@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   SquaresFour, UserCheck, User, CalendarBlank, CreditCard, Bank, ChatCircle, GridFour, Bell, Star,
-  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, DotsThree, CaretDown, CaretLeft, CaretRight,
+  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, DotsThree, CaretDown, CaretLeft, CaretRight, UserList, UserPlus,
 } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { payoutAlerts } from "@/app/(app)/payouts/data";
@@ -20,12 +20,14 @@ const main = (c: Counts): Item[] => [
   { href: "/payouts", label: "Payouts", icon: CreditCard, badge: c.payouts, tone: "r" },
   { href: "/bookings", label: "Bookings", icon: CalendarBlank, badge: c.requests, tone: "b" },
   { href: "/buddies", label: "Buddies", icon: UserCheck, badge: c.buddies },
+  { href: "/signups", label: "New sign-ups", icon: UserPlus },
   { href: "/customers", label: "Customers", icon: User },
   { href: "/support", label: "Support", icon: ChatCircle, badge: c.support, tone: "b" },
 ];
 const more = (c: Counts): Item[] => [
   { href: "/reviews", label: "Reviews", icon: Star },
   { href: "/catalog", label: "Categories & services", icon: GridFour },
+  { href: "/waitlist", label: "Waitlist", icon: UserList },
   { href: "/content", label: "Content pages", icon: FileText },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/money", label: "Money", icon: Bank },
