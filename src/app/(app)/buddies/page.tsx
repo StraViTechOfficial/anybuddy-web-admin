@@ -9,7 +9,7 @@ import type { Buddy } from "@/lib/types";
 import { PageHead, Empty, LoadError, SkeletonRows } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { Modal } from "@/components/Modal";
-import { Review, docCount } from "./Review";
+import { Review, docCount, docsFor } from "./Review";
 import s from "./buddies.module.css";
 
 const TABS = [["0", "Waiting for review"], ["1", "Approved"], ["2", "Rejected"]] as const;
@@ -105,7 +105,7 @@ function Buddies() {
                     <input type="checkbox" checked={checked.has(b._id)} onChange={() => toggle(b._id)} onClick={(e) => e.stopPropagation()} aria-label={`Select ${fullName(b)}`} />
                     <span className={s.av}>{initials(fullName(b))}</span>
                     <span className={s.m}><b>{fullName(b)}</b><small>{b.email}</small></span>
-                    <span className={s.meter} title={`${docCount(b)} of 4 documents`}>{[0, 1, 2, 3].map((i) => <i key={i} className={i < docCount(b) ? s.on : ""} />)}</span>
+                    <span className={s.meter} title={`${docCount(b)} of ${docsFor(b).length} documents`}>{docsFor(b).map((_, i) => <i key={i} className={i < docCount(b) ? s.on : ""} />)}</span>
                   </div>
                 ))}
                 {loading && <div className="skeleton" style={{ height: 56, margin: 12 }} />}
@@ -124,7 +124,7 @@ function Buddies() {
                     <td><Link href={`/buddies/${b._id}?s=${tab}&a=${b.isActive ?? 1}`} className={s.who} onClick={(e) => e.stopPropagation()}><span className={s.av}>{initials(fullName(b))}</span><span><b>{fullName(b)}</b><small>{b.email}</small></span></Link></td>
                     <td>{phone(b.phone, b.countryCode)}</td>
                     <td>{b.address?.city ? `${b.address.city}, ${b.address.state ?? ""}` : <span className="muted">Not added</span>}</td>
-                    <td><span className={`chip ${docCount(b) === 4 ? "c-ok" : "c-warn"}`}>{docCount(b)} of 4</span></td>
+                    <td><span className={`chip ${docCount(b) === docsFor(b).length ? "c-ok" : "c-warn"}`}>{docCount(b)} of {docsFor(b).length}</span></td>
                     <td>{b.isActive === 0 ? <span className="chip c-bad">Blocked</span> : tab === "1" ? <span className="chip c-ok">Approved</span> : <span className="chip c-mut">Rejected</span>}</td>
                   </tr>
                 ))}

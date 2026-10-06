@@ -1,4 +1,5 @@
 "use client";
+import { PasswordInput } from "@/components/PasswordInput";
 import { useState } from "react";
 import { Warning } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
@@ -31,9 +32,9 @@ export default function Account() {
         <section className="box">
           <header className="bh"><h2>Change password</h2></header>
           <form onSubmit={save} noValidate style={{ padding: 18, display: "flex", flexDirection: "column", gap: 14 }}>
-            <label className="field"><span>Current password</span><input className="input" type="password" autoComplete="current-password" value={f.old} onChange={(e) => setF({ ...f, old: e.target.value })} /></label>
-            <label className="field"><span>New password</span><input className="input" type="password" autoComplete="new-password" value={f.pw} onChange={(e) => setF({ ...f, pw: e.target.value })} /><span className="hint">At least 8 characters.</span></label>
-            <label className="field"><span>New password again</span><input className="input" type="password" autoComplete="new-password" value={f.pw2} onChange={(e) => setF({ ...f, pw2: e.target.value })} /></label>
+            <label className="field"><span>Current password</span><PasswordInput autoComplete="current-password" value={f.old} onChange={(e) => setF({ ...f, old: e.target.value })} /></label>
+            <label className="field"><span>New password</span><PasswordInput autoComplete="new-password" value={f.pw} onChange={(e) => setF({ ...f, pw: e.target.value })} /><span className="hint">At least 8 characters.</span></label>
+            <label className="field"><span>New password again</span><PasswordInput autoComplete="new-password" value={f.pw2} onChange={(e) => setF({ ...f, pw2: e.target.value })} /></label>
             {err && <p className="err" role="alert">{err}</p>}
             <button className="btn p" style={{ alignSelf: "flex-start" }} disabled={busy} aria-busy={busy}>{busy ? "Updating…" : "Update password"}</button>
           </form>

@@ -1,4 +1,5 @@
 "use client";
+import { PasswordInput } from "@/components/PasswordInput";
 import { useState, type FormEvent } from "react";
 import { api } from "@/lib/api";
 import { AuthCard } from "../AuthCard";
@@ -32,8 +33,8 @@ export default function Reset() {
   return (
     <AuthCard title="Set a new password" sub="At least 8 characters. Other devices are signed out.">
       <form className={s.form} onSubmit={submit} noValidate method="post" action="#">
-        <label className="field"><span>New password</span><input className="input" name="pw" type="password" autoComplete="new-password" autoFocus /></label>
-        <label className="field"><span>New password again</span><input className="input" name="pw2" type="password" autoComplete="new-password" /></label>
+        <label className="field"><span>New password</span><PasswordInput name="pw" autoComplete="new-password" autoFocus /></label>
+        <label className="field"><span>New password again</span><PasswordInput name="pw2" autoComplete="new-password" /></label>
         {err && <p className="err" role="alert">{err}</p>}
         <button className="btn p block" style={{ height: 44 }} disabled={busy || !ready} aria-busy={busy}>{busy ? "Saving…" : "Save and log in"}</button>
       </form>

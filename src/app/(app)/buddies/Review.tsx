@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Check, IdentificationCard, FileText, Warning, ArrowSquareOut, Prohibit, Certificate } from "@phosphor-icons/react";
+import { Check, IdentificationCard, FileText, Warning, ArrowSquareOut, Prohibit, Certificate, UserFocus } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useLoad } from "@/lib/useLoad";
 import { clock, date, fullName, initials, money, phone } from "@/lib/format";
@@ -14,6 +14,7 @@ import s from "./buddies.module.css";
 type LicenceRow = { categoryId: string; categoryName: string; licenceName: string; status: "missing" | "pending" | "approved" | "needs_changes"; note?: string | null };
 type Onboarding = { stage: "details" | "services" | "documents" | "submitted"; step: number | null; bookable: boolean;
   verify?: { submitted: boolean; submittedAt: string | null }; // v3 B3 (older servers: none)
+  signupFlow?: 3 | null; // v3 sign-ups take a selfie (R13); older apps never do
   checklist: { payouts: boolean; photo: boolean; hours: boolean; email: boolean; about: boolean; licences: LicenceRow[] } };
 type Detail = { ProviderDetails: Buddy & {
   availability?: { day: number; isOpen: boolean; from: string; to: string }[]; averageRating?: number; totalRatings?: number; totalEarning?: number;
@@ -22,7 +23,11 @@ type Detail = { ProviderDetails: Buddy & {
 type Offer = { _id: string; serviceName: string; price: number; durationType: number };
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; // backend day 0 = Sunday (moment .day())
 const DOCS: [keyof Buddy, string, React.ElementType][] = [["IdProofFront", "Photo ID, front", IdentificationCard], ["IdProofBack", "Photo ID, back", IdentificationCard], ["certificate", "Trade license", FileText], ["additionalDoc", "Insurance", FileText]];
-export const docCount = (b: Buddy) => DOCS.filter(([k]) => !!b[k]).length;
+// R13 (1.3): the live selfie, shown first (owner, 6 Oct 2026); only v3 sign-ups (signupFlow 3) take one, so older
+// Buddies are counted out of 4, v3 Buddies out of 5.
+const SELFIE: (typeof DOCS)[number] = ["selfieDoc", "Selfie (match to the ID)", UserFocus];
+export const docsFor = (b: Buddy, v3 = b.signupFlow === 3) => (v3 || b.selfieDoc ? [SELFIE, ...DOCS] : DOCS);
+export const docCount = (b: Buddy, v3?: boolean) => docsFor(b, v3).filter(([k]) => !!b[k]).length;
 const LICENCE: Record<LicenceRow["status"], [string, string]> = {
   missing: ["c-mut", "Not uploaded"], pending: ["c-warn", "Waiting for review"], approved: ["c-ok", "Approved"], needs_changes: ["c-bad", "Needs changes"],
 };
@@ -109,6 +114,7 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
       {b.isActive === 0 && <div className="note"><Prohibit size={16} />Blocked: can't sign in or take new jobs.</div>}
 
       <dl className={s.kv}>
+        <dt>Nickname</dt><dd>{b.nickname ? <>{b.nickname} <span className="muted">· customers see only this</span></> : <span className="muted">None · customers see the first name</span>}</dd>
         <dt>Phone</dt><dd>{phone(b.phone, b.countryCode)}</dd>
         <dt>Service area</dt><dd>{b.address?.city ? `${b.address.city}, ${b.address.state ?? ""} ${b.postalCode ?? ""}` : "Not added yet"}</dd>
         {ob?.verify && <><dt>Verification</dt><dd>{ob.verify.submitted ? `Sent for verification${ob.verify.submittedAt ? ` ${date(ob.verify.submittedAt)}` : ""}` : "Not sent yet"}</dd></>}
@@ -117,9 +123,9 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
         <dt>Trades</dt><dd>{data.categories?.map((c) => c.categoryName).join(", ") || "None picked"}</dd>
       </dl>
 
-      <section><h3 className={s.h3}>Identity &amp; documents <span className="muted">· {docCount(b)} of 4</span></h3>
+      <section><h3 className={s.h3}>Identity &amp; documents <span className="muted">· {docCount(b, ob?.signupFlow === 3)} of {docsFor(b, ob?.signupFlow === 3).length}</span></h3>
         <div className={s.docs}>
-          {DOCS.map(([k, label, Icon]) => {
+          {docsFor(b, ob?.signupFlow === 3).map(([k, label, Icon]) => {
             const url = b[k] as string | null | undefined;
             return (
               <div key={k} className={`${s.doc} ${url ? "" : s.miss}`}>

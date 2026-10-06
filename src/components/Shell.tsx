@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   SquaresFour, UserCheck, User, CalendarBlank, CreditCard, Bank, ChatCircle, GridFour, Bell, Star,
-  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, DotsThree, CaretDown, CaretLeft, CaretRight, UserList, UserPlus,
+  Percent, FileText, Gear, List, MagnifyingGlass, Moon, SignOut, DotsThree, CaretDown, CaretLeft, CaretRight, UserList, UserPlus, ListPlus,
 } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { payoutAlerts } from "@/app/(app)/payouts/data";
 import { Palette } from "./Palette";
 import s from "./Shell.module.css";
 
-type Counts = { buddies?: number; requests?: number; support?: number; fees?: boolean; payouts?: number };
+type Counts = { serviceRequests?: number; buddies?: number; requests?: number; support?: number; fees?: boolean; payouts?: number };
 type Item = { href: string; label: string; icon: React.ElementType; badge?: number | string; tone?: "b" | "r" };
 
 // Daily work stays in view; occasional pages sit under More (owner, 30 Sep 2026, like Stripe/Shopify admin menus).
@@ -21,6 +21,7 @@ const main = (c: Counts): Item[] => [
   { href: "/bookings", label: "Bookings", icon: CalendarBlank, badge: c.requests, tone: "b" },
   { href: "/buddies", label: "Buddies", icon: UserCheck, badge: c.buddies },
   { href: "/signups", label: "New sign-ups", icon: UserPlus },
+  { href: "/service-requests", label: "Service requests", icon: ListPlus, badge: c.serviceRequests },
   { href: "/customers", label: "Customers", icon: User },
   { href: "/support", label: "Support", icon: ChatCircle, badge: c.support, tone: "b" },
 ];
@@ -49,7 +50,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
       count("admin/cms-management/list-supportUs-queries", { type: 1 }),
       payoutAlerts().then((a) => a.n, () => undefined),
       api<Record<string, unknown>>("admin/platform-config/get-all").then((r) => !!r.data && Object.keys(r.data).length > 0).catch(() => undefined),
-    ]).then(([buddies, requests, support, payouts, fees]) => setCounts({ buddies, requests, support, payouts: payouts as number | undefined, fees: fees as boolean | undefined }));
+      count("admin/service-requests", { status: "pending" }),
+    ]).then(([buddies, requests, support, payouts, fees, serviceRequests]) => setCounts({ buddies, requests, support, payouts: payouts as number | undefined, fees: fees as boolean | undefined, serviceRequests: serviceRequests as number | undefined }));
   }, []);
   useEffect(() => { setOpen(false); }, [path]);
   useEffect(() => {
