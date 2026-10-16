@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Warning, Info } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useLoad } from "@/lib/useLoad";
-import { bookingState, clock, date, fullName, money, phone, when } from "@/lib/format";
+import { bookingState, clock, date, dateAt, fullName, money, phone, when } from "@/lib/format";
 import type { Person } from "@/lib/types";
 import { Modal } from "@/components/Modal";
 import { StateChip } from "@/components/ui";
@@ -19,7 +19,7 @@ type Detail = {
   payoutStatus?: string | null; payoutAmount?: number | null; payoutSentAt?: string | null; payoutArrivesBy?: string | null; payoutPaidAt?: string | null;
   serviceProvider?: Person; userDetails?: Person;
 };
-const at = (d?: string | null) => (d ? `${date(d)} · ${new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(new Date(d))}` : "");
+const at = dateAt;
 // The Buddy's payout: stripe mode is sent to their Stripe account, then paid at their bank; manual mode is paid by hand.
 const payout = (b: Detail) => {
   const amt = money(b.payoutAmount ?? b.vendorPriceAfterDetection ?? 0);
@@ -34,7 +34,7 @@ const payout = (b: Detail) => {
   }
 };
 
-/** Everything about one booking. Cancel / refund from here needs the admin endpoint (FEA-43). */
+/** Everything about one booking. Cancel / refund from here needs the admin endpoint. */
 export function BookingDrawer({ id, onClose }: { id: string; onClose: () => void }) {
   const toast = useToast();
   const { data: b, error, reload } = useLoad(() => api<Detail | Detail[]>("admin/booking-management/detail", { query: { bookingId: id } }).then((r) => (Array.isArray(r.data) ? r.data[0] : r.data)), [id]);

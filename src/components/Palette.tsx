@@ -4,14 +4,13 @@ import { useRouter } from "next/navigation";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { fullName } from "@/lib/format";
+import { main, more } from "./nav";
 import s from "./Palette.module.css";
 
 type Opt = { group: string; label: string; sub?: string; href: string };
-const PAGES: Opt[] = [
-  ["Dashboard", "/"], ["Buddies", "/buddies"], ["Customers", "/customers"], ["Bookings", "/bookings"], ["Payouts", "/payouts"],
-  ["Money", "/money"], ["Support", "/support"], ["Categories & services", "/catalog"], ["New sign-ups", "/signups"], ["Waitlist", "/waitlist"], ["Notifications", "/notifications"],
-  ["Reviews", "/reviews"], ["Fees & settings", "/fees"], ["Content pages", "/content"], ["Account & security", "/account"],
-].map(([label, href]) => ({ group: "Pages", label, href }));
+// Every menu page (from the shared menu list), plus Account, which sits under the user menu.
+const PAGES: Opt[] = [...main({}), ...more({}), { href: "/account", label: "Account & security" }]
+  .map(({ label, href }) => ({ group: "Pages", label, href }));
 type Person = { _id: string; firstName?: string; lastName?: string; email?: string };
 
 // ⌘K / "/": jump to a page, or find a Buddy or customer by name or email (server search, 250 ms after typing stops).

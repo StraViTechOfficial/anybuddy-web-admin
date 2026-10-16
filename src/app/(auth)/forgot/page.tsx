@@ -6,7 +6,7 @@ import { AuthCard } from "../AuthCard";
 import { useReady } from "@/components/useReady";
 import s from "../auth.module.css";
 
-// Step 1 of 3: email → code → new password. Nothing here signs you in (the old admin did, SEC-03).
+// Step 1 of 3: email → code → new password. Nothing here signs you in (the old admin did).
 export default function Forgot() {
   const ready = useReady();
   const [err, setErr] = useState("");

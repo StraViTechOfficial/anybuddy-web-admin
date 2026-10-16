@@ -1,5 +1,5 @@
-// Backend-for-frontend, same pattern as the provider web (D-41). The browser only calls /api/*; this handler
-// forwards to BACKEND_URL and keeps the admin token in an httpOnly cookie, so page scripts can never read it (SEC-41).
+// Backend-for-frontend, same pattern as the provider web. The browser only calls /api/*; this handler
+// forwards to BACKEND_URL and keeps the admin token in an httpOnly cookie, so page scripts can never read it.
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -19,7 +19,7 @@ const stageOf = (token: string): string | undefined => {
   }
 };
 
-// Bank numbers never reach the browser in full (SEC-42 / AD-11): mask anything that looks like one.
+// Bank numbers never reach the browser in full: mask anything that looks like one.
 const BANK_KEYS = new Set(["account_number", "accountNumber", "routing_number", "routingNumber"]);
 function maskBank(v: unknown): unknown {
   if (Array.isArray(v)) return v.map(maskBank);
@@ -37,7 +37,7 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   if (parts.some((p) => p === "." || p === ".." || /[\\/%]/.test(p))) return NextResponse.json({ status: 0, message: "Not found." }, { status: 404 });
   const path = parts.join("/");
   if (!BACKEND) return NextResponse.json({ status: 0, message: "BACKEND_URL is not set." }, { status: 500 });
-  // Admin routes, plus the public home feed read-only (it carries each service's "From $X" price, FEA-46).
+  // Admin routes, plus the public home feed read-only (it carries each service's "From $X" price).
   const publicRead = req.method === "GET" && path === "user/homepage";
   if (!ALLOWED.test(path) && !publicRead) return NextResponse.json({ status: 0, message: "Not found." }, { status: 404 });
 
@@ -70,7 +70,7 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
     const busy = upstream.status === 429;
     return NextResponse.json({ status: 0, message: busy ? "Too many tries. Wait a few minutes and try again." : "Something went wrong. Try again." }, { status: busy ? 429 : 502 });
   }
-  // One exception: the manual-payout list needs the full account to pay from Citizens (owner, 30 Sep).
+  // One exception: the manual-payout list needs the full account to pay from Citizens.
   // The screen keeps it hidden until the admin presses Show. Everywhere else only the last 4 leave the server.
   if (!(req.method === "GET" && path === "admin/payouts")) maskBank(json.data);
 

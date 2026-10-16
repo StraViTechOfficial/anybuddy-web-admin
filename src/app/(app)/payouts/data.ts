@@ -1,4 +1,4 @@
-// Manual payouts while Stripe Connect is on hold (owner, 30 Sep, relayed by the main session): one "requested"
+// Manual payouts while Stripe Connect is on hold: one "requested"
 // payout per completed job; the admin pays it from Citizens online banking and records the reference.
 // The backend reply is still settling, so every field is read defensively in one place.
 import { api } from "@/lib/api";
@@ -17,7 +17,7 @@ export const vendorOf = (p: Payout) => {
   return {
     name: v.name || "Buddy", phone: v.phone, email: v.email, bank: v.bankName,
     holder: v.accountHolder ?? v.account_holder_name, routing: v.routingNumber ?? v.routing_number,
-    // Full number only on "requested" rows; paid/rejected rows carry accountLast4 (backend, 30 Sep).
+    // Full number only on "requested" rows; paid/rejected rows carry accountLast4 (backend).
     account: v.accountNumber ?? v.account_number, last4: v.accountLast4, type: v.accountType,
   };
 };
@@ -26,7 +26,7 @@ export const jobOf = (p: Payout) => {
   return { number: b?.bookingId, service: b?.serviceName, doneAt: b?.checkOutAt ?? p.requestedAt ?? p.createdAt };
 };
 
-/** "3 hr 10 min", "45 min", "2 days" since a time. Hours and minutes only (owner D-58). */
+/** "3 hr 10 min", "45 min", "2 days" since a time. Hours and minutes only. */
 export const ageText = (since?: string) => {
   if (!since) return "";
   const min = Math.max(0, Math.floor((Date.now() - new Date(since).getTime()) / 6e4));

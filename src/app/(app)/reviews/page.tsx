@@ -8,7 +8,7 @@ import { PageHead, Empty, LoadError } from "@/components/ui";
 type Review = { _id: string; rating: number; feedBack?: string; createdAt?: string; name?: string };
 
 // There's no admin reviews API yet, so this reads the reviews the public home feed shows. Hiding a review needs
-// that API (A-15). Text is always shown as plain text (SEC-41).
+// that API. Text is always shown as plain text.
 export default function Reviews() {
   const { data, error, reload, loading } = useLoad(() => api<{ reviews?: Review[] }>("user/homepage").then((r) => r.data.reviews ?? []));
   return (

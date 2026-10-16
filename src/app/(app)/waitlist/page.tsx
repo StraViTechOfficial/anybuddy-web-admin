@@ -3,18 +3,16 @@ import { useState } from "react";
 import { DownloadSimple, UserList } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useLoad } from "@/lib/useLoad";
-import { date, phone } from "@/lib/format";
+import { date, downloadCsv, phone } from "@/lib/format";
 import { PageHead, Empty, LoadError, SkeletonRows } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 
-// Buddies who signed up outside the operating area (B6, AD4). One row per phone, newest first.
+// Buddies who signed up outside the operating area. One row per phone, newest first.
 type Row = { _id: string; phone: string; countryCode?: string; state?: string; postalCode?: string; createdAt: string };
 const LIMIT = 50;
 
-// Quoted CSV; a cell starting with = + - @ gets a leading ' so a spreadsheet never runs it as a formula.
-const cell = (v: unknown) => `"${String(v ?? "").replace(/^[=+\-@\t\r]/, "'$&").replace(/"/g, '""')}"`;
 const csv = (rows: Row[]) => [["Country code", "Phone", "State", "ZIP", "Joined (UTC)"], ...rows.map((r) =>
-  [(r.countryCode ?? "+1").replace(/\D/g, ""), r.phone, r.state, r.postalCode, r.createdAt])].map((l) => l.map(cell).join(",")).join("\r\n");
+  [(r.countryCode ?? "+1").replace(/\D/g, ""), r.phone, r.state, r.postalCode, r.createdAt])];
 
 export default function Waitlist() {
   const toast = useToast();
@@ -33,11 +31,7 @@ export default function Waitlist() {
         all.push(...(r.data ?? []));
         if (!r.data?.length || all.length >= (r.count ?? 0)) break;
       }
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob(["﻿" + csv(all)], { type: "text/csv;charset=utf-8" }));
-      a.download = `anybuddy-waitlist-${new Date().toISOString().slice(0, 10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(a.href);
+      downloadCsv("anybuddy-waitlist", csv(all));
     } catch (e) { toast((e as Error).message); }
     setBusy(false);
   }

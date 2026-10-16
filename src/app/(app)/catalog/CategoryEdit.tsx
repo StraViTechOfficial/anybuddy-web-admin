@@ -11,7 +11,7 @@ import { PhotoPick } from "./PhotoPick";
 import { Toggle } from "./ServiceForm";
 import s from "./catalog.module.css";
 
-// Licence switch + name and the hourly rate range (R4.2, R5.1). Rates are typed as text so "abc" gets the server's words.
+// Licence switch + name and the hourly rate range. Rates are typed as text so "abc" gets the server's words.
 export type Rules = { licenceRequired: boolean; licenceName: string; rateMin: string; rateMax: string };
 export const rulesOf = (c?: Category): Rules => ({
   licenceRequired: !!c?.licenceRequired, licenceName: c?.licenceName ?? "",
@@ -53,7 +53,7 @@ export function RulesFields({ name, r, set, err, was, count }: { name: string; r
   );
 }
 
-/** Buddy offers outside their category's range: listed for the owner, never changed by the server (B15). */
+/** Buddy offers outside their category's range: listed for the admin, never changed by the server. */
 export function OutOfRangeNote({ rows, where }: { rows: OutOfRange[]; where?: string }) {
   if (!rows.length) return null;
   return (
@@ -122,7 +122,7 @@ export function CategoryEdit({ data, cat, onClose, onSaved }: { data: Catalog; c
         <PhotoPick id="cePhoto" url={f.photo} onChange={(photo) => setF({ ...f, photo })} />
         <RulesFields name={f.name} r={rules} set={(r) => { setRules(r); setRateErr(""); }} err={rateErr} was={!!cat.licenceRequired} count={count} />
         <OutOfRangeNote rows={data.outOfRange.filter((o) => o.categoryId === cat._id)} where={cat.categoryName} />
-        {pinned(cat.categoryName) && <div className="note"><Lock size={16} />{cat.categoryName} is pinned to the top of the app (owner decision) and can&apos;t be retired.</div>}
+        {pinned(cat.categoryName) && <div className="note"><Lock size={16} />{cat.categoryName} is pinned to the top of the app and can&apos;t be retired.</div>}
         {err && <p className="err" role="alert">{err}</p>}
       </form>
     </Modal>

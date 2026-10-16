@@ -24,12 +24,12 @@ export type Booking = {
 
 export type Buddy = Person & {
   middleName?: string | null;
-  nickname?: string | null; // R14: shown to customers instead of the first name
+  nickname?: string | null; // shown to customers instead of the first name
   postalCode?: string;
   address?: { street?: string; city?: string; state?: string };
   IdProofFront?: string | null;
   IdProofBack?: string | null;
-  selfieDoc?: string | null; // R13
+  selfieDoc?: string | null; // live selfie
   signupFlow?: 3 | null; // v3 sign-ups (they take a selfie)
   certificate?: string | null;
   additionalDoc?: string | null;

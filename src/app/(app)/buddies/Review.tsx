@@ -10,11 +10,11 @@ import { Modal } from "@/components/Modal";
 import { ReasonDialog } from "@/components/ReasonDialog";
 import s from "./buddies.module.css";
 
-// v2 (AD2/AD3): one licence row per licensed category the Buddy offers; the file comes from ProviderDetails.licences.
+// v2: one licence row per licensed category the Buddy offers; the file comes from ProviderDetails.licences.
 type LicenceRow = { categoryId: string; categoryName: string; licenceName: string; status: "missing" | "pending" | "approved" | "needs_changes"; note?: string | null };
 type Onboarding = { stage: "details" | "services" | "documents" | "submitted"; step: number | null; bookable: boolean;
-  verify?: { submitted: boolean; submittedAt: string | null }; // v3 B3 (older servers: none)
-  signupFlow?: 3 | null; // v3 sign-ups take a selfie (R13); older apps never do
+  verify?: { submitted: boolean; submittedAt: string | null }; // v3 (older servers: none)
+  signupFlow?: 3 | null; // v3 sign-ups take a selfie; older apps never do
   checklist: { payouts: boolean; photo: boolean; hours: boolean; email: boolean; about: boolean; licences: LicenceRow[] } };
 type Detail = { ProviderDetails: Buddy & {
   availability?: { day: number; isOpen: boolean; from: string; to: string }[]; averageRating?: number; totalRatings?: number; totalEarning?: number;
@@ -26,7 +26,7 @@ type Detail = { ProviderDetails: Buddy & {
 type Offer = { _id: string; serviceName: string; price: number; durationType: number };
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; // backend day 0 = Sunday (moment .day())
 const DOCS: [keyof Buddy, string, React.ElementType][] = [["IdProofFront", "Photo ID, front", IdentificationCard], ["IdProofBack", "Photo ID, back", IdentificationCard], ["certificate", "Trade license", FileText], ["additionalDoc", "Insurance", FileText]];
-// R13 (1.3): the live selfie, shown first (owner, 6 Oct 2026); only v3 sign-ups (signupFlow 3) take one, so older
+// The live selfie, shown first; only v3 sign-ups (signupFlow 3) take one, so older
 // Buddies are counted out of 4, v3 Buddies out of 5.
 const SELFIE: (typeof DOCS)[number] = ["selfieDoc", "Selfie (match to the ID)", UserFocus];
 export const docsFor = (b: Buddy, v3 = b.signupFlow === 3) => (v3 || b.selfieDoc ? [SELFIE, ...DOCS] : DOCS);
@@ -40,7 +40,7 @@ const PAYOUT: Record<string, [string, string]> = {
 const STAGE = { details: "Step 1 of 3 · Your details", services: "Step 2 of 3 · Services and rates", documents: "Step 3 of 3 · Documents", submitted: "Sign-up sent" };
 
 /** One Buddy: documents, services with their own prices, hours; decide (waiting) or block (approved). */
-// The detail reply has no verificationStatus / isActive (backend BUG-100), so callers pass what the list knows.
+// The detail reply has no verificationStatus / isActive, so callers pass what the list knows.
 export function Review({ id, known, onDecided }: { id: string; known: { status: 0 | 1 | 2; active: number }; onDecided?: (id: string, status: 1 | 2) => void }) {
   const toast = useToast();
   const { data, error, loading, reload } = useLoad(async () => {
@@ -191,7 +191,7 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
       </section>
 
       {rejecting && (
-        // The server ignores `reason` today and sends a fixed "not approved, contact support" email + app notice (FEA-45).
+        // The server ignores `reason` today and sends a fixed "not approved, contact support" email + app notice.
         <ReasonDialog title={`Reject ${name}'s application`} onClose={() => setRejecting(false)} onConfirm={(r) => send(2, r)}
           next={<>{name.split(" ")[0]} gets an email and an app notice saying the account wasn&apos;t approved and to contact AnyBuddy support. You can approve them later from Rejected.</>}
           label="Reason for rejecting" placeholder="Example: The ID photo is blurry. Upload a clear photo of the front."

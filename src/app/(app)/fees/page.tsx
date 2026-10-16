@@ -10,9 +10,9 @@ import cat from "../catalog/catalog.module.css"; // the switch
 
 type Config = { _id?: string; commission?: number; tax?: number; phoneCountries?: string[] };
 type Country = { code: string; name: string; flag: string; dial: string };
-// The server saves any value (BUG-88), so the limits are checked here: commission 0–50 %, tax 0–20 %.
+// The server saves any value, so the limits are checked here: commission 0–50 %, tax 0–20 %.
 const check = (v: string, max: number) => v.trim() !== "" && !isNaN(Number(v)) && Number(v) >= 0 && Number(v) <= max;
-// FEA-49: stored ISO codes ("US"); an older "+1" means the US, another dial code the first country with it. Never empty.
+// Stored as ISO codes ("US"); an older "+1" means the US, another dial code the first country with it. Never empty.
 const chosenOf = (stored: string[] | undefined, all: Country[]) => {
   const l = (stored ?? []).map((s) => (s === "+1" ? "US" : s.startsWith("+") ? all.find((c) => c.dial === s)?.code : s)).filter((c): c is string => !!c && all.some((k) => k.code === c));
   return l.length ? [...new Set(l)] : ["US"];
@@ -26,7 +26,7 @@ const matches = (q: string, all: Country[], chosen: string[]) => {
 
 // Buddy sign-up (API v2.1): the distance choices and the states AnyBuddy works in. The apps read them from /api/config.
 type Signup = { travelMin: number; travelMax: number; travelStep: number; travelDefault: number; operatingStates: string[] };
-// v3 B4: the Plaid switch comes with the same settings; plaidKeysSet only says whether the keys are on the server.
+// v3: the Plaid switch comes with the same settings; plaidKeysSet only says whether the keys are on the server.
 type SignupView = Signup & { plaidBank?: boolean; plaidKeysSet?: boolean };
 const STATES: [string, string][] = [["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"], ["CA", "California"], ["CO", "Colorado"], ["CT", "Connecticut"],
   ["DE", "Delaware"], ["DC", "District of Columbia"], ["FL", "Florida"], ["GA", "Georgia"], ["HI", "Hawaii"], ["ID", "Idaho"], ["IL", "Illinois"], ["IN", "Indiana"], ["IA", "Iowa"],
@@ -163,7 +163,7 @@ export default function Fees() {
               {!found.length && <li className="hint">No match for “{pc.q.trim()}”</li>}
             </ul>}
             <span id="fpH" className="hint">Customers and Buddies can only sign up and log in with these. The US and Canada share +1.</span>
-            {/* Owner, 16 Oct 2026: Twilio doesn't allow SMS geo permissions to change through its API (by design), so the
+            {/* Twilio doesn't allow SMS geo permissions to change through its API (by design), so the
                 admin is told exactly which countries to switch in Twilio, with direct links. */}
             {(() => {
               const saved = chosenOf(data?.phoneCountries, all), name = (k: string) => all.find((x) => x.code === k)?.name ?? k;

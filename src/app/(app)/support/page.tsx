@@ -10,8 +10,8 @@ import { useToast } from "@/components/Toast";
 type Ticket = { _id: string; name?: string; email?: string; description?: string; createdAt?: string; type: 1 | 2 };
 const validEmail = (e?: string) => /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(e ?? "");
 
-// Messages from the Contact form (type 1 customers, 2 Buddies). Always shown as plain text (SEC-41).
-// Replying and Open/Resolved need the server to store them (FEA-44); until then the admin replies by email.
+// Messages from the Contact form (type 1 customers, 2 Buddies). Always shown as plain text.
+// Replying and Open/Resolved need the server to store them; until then the admin replies by email.
 export default function Support() {
   const toast = useToast();
   const [who, setWho] = useState<1 | 2>(1);

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Info } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useLoad } from "@/lib/useLoad";
-import { date, money } from "@/lib/format";
+import { dateAt, money } from "@/lib/format";
 import { Modal } from "@/components/Modal";
 import b from "../bookings/bookings.module.css";
 import s from "./money.module.css";
@@ -15,7 +15,7 @@ type Trail = { _id: string; bookingId: string | null; hasLedger: boolean; lines:
 /** What the booking record says, for bookings from before the ledger. */
 export type Recorded = { paid: number; refunded: number; tax: number; fee: number; earned: number };
 
-const time = (d: string) => `${date(d)} · ${new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(new Date(d))}`;
+const time = dateAt;
 const SECTIONS: [Section, string, string, string][] = [
   ["in", "Money in", "From the customer", ""],
   ["out", "Money out", "Refunds, Stripe fees, the Buddy's share, sales tax", "− "],

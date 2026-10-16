@@ -1,4 +1,4 @@
-// Money, dates, phones and names: one place. Business time zone is America/New_York (D-32).
+// Money, dates, phones, names and CSV files: one place. Business time zone is America/New_York.
 export const TZ = "America/New_York";
 
 export const money = (n: number | null | undefined) =>
@@ -9,6 +9,9 @@ const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-US
 export const date = (d: string | Date) => fmt({ month: "short", day: "numeric", year: "numeric" }).format(new Date(d));
 /** "Oct 3, 10:23 AM" */
 export const dateTime = (d: string | Date) => fmt({ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(d));
+/** "Sep 30, 2026 · 1:00 PM" (empty for no date). */
+export const dateAt = (d?: string | Date | null) =>
+  d ? `${date(d)} · ${fmt({ hour: "numeric", minute: "2-digit" }).format(new Date(d))}` : "";
 /** "13:00" (backend slot) → "1:00 PM". */
 export const clock = (hhmm?: string | null) => {
   const [h, m] = String(hhmm ?? "").split(":").map(Number);
@@ -35,3 +38,14 @@ export const bookingState = (b: { status: number; cancelledBy?: string | null })
   b.status === 1 ? "Request" : b.status === 2 ? "Scheduled" : b.status === 3 ? "Completed" : b.cancelledBy === "system" ? "Expired" : "Canceled";
 /** "1 request", "3 requests". */
 export const plural = (n: number | undefined, one: string, many = one + "s") => `${n ?? "–"} ${n === 1 ? one : many}`;
+
+// Quoted CSV; a cell starting with = + - @ gets a leading ' so a spreadsheet never runs it as a formula.
+const cell = (v: unknown) => `"${String(v ?? "").replace(/^[=+\-@\t\r]/, "'$&").replace(/"/g, '""')}"`;
+/** Saves rows (header first) as a UTF-8 CSV that Excel opens correctly: "<name>-YYYY-MM-DD.csv". */
+export const downloadCsv = (name: string, rows: unknown[][]) => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + rows.map((l) => l.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = `${name}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};

@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { DownloadSimple, MagnifyingGlass, UserPlus } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useLoad } from "@/lib/useLoad";
-import { dateTime, phone } from "@/lib/format";
+import { dateTime, downloadCsv, phone } from "@/lib/format";
 import { PageHead, Empty, LoadError, SkeletonRows } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 
-// Buddy sign-up v3 (B6): everyone who verified their phone, newest first (GET admin/vendors/signups). City only:
+// Buddy sign-up v3: everyone who verified their phone, newest first (GET admin/vendors/signups). City only:
 // the street and date of birth stay on the Buddy's own page.
 type Progress = "phone" | "details" | "services" | "submitted" | "approved" | "rejected";
 type Row = { id: string; name: string | null; phone: string; countryCode?: string; email: string | null; city: string | null; state: string | null;
@@ -27,10 +27,8 @@ const city = (r: Row) => [r.city, r.state].filter(Boolean).join(", ") || null;
 const travels = (r: Row) => (r.travelMiles ? `${r.travelMiles} mi` : null);
 
 // Quoted CSV; a cell starting with = + - @ gets a leading ' so a spreadsheet never runs it as a formula.
-const cell = (v: unknown) => `"${String(v ?? "").replace(/^[=+\-@\t\r]/, "'$&").replace(/"/g, '""')}"`;
 const csv = (rows: Row[]) => [["Name", "Phone", "Email", "Home city", "Travels", "Notifications", "Progress", "Started (UTC)"], ...rows.map((r) =>
-  [r.name, phone(r.phone, r.countryCode), r.email, city(r), travels(r), r.notifications === "on" ? "On" : "Off", PROGRESS[r.progress], r.startedAt])]
-  .map((l) => l.map(cell).join(",")).join("\r\n");
+  [r.name, phone(r.phone, r.countryCode), r.email, city(r), travels(r), r.notifications === "on" ? "On" : "Off", PROGRESS[r.progress], r.startedAt])];
 
 export default function Signups() {
   const toast = useToast(), router = useRouter();
@@ -55,11 +53,7 @@ export default function Signups() {
         all.push(...(r.data?.rows ?? []));
         if (!r.data?.rows.length || all.length >= (r.count ?? 0)) break;
       }
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob(["﻿" + csv(all)], { type: "text/csv;charset=utf-8" }));
-      a.download = `anybuddy-new-signups-${filter}-${new Date().toISOString().slice(0, 10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(a.href);
+      downloadCsv(`anybuddy-new-signups-${filter}`, csv(all));
     } catch (e) { toast((e as Error).message); }
     setBusy(false);
   }

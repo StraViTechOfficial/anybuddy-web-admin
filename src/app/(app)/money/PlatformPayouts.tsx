@@ -9,7 +9,7 @@ import { Modal } from "@/components/Modal";
 import { useToast } from "@/components/Toast";
 import s from "./money.module.css";
 
-// Payouts to Citizens (owner decision 30 Sep 2026): the Stripe payout schedule is Manual, so AnyBuddy's own money
+// Payouts to Citizens (by design): the Stripe payout schedule is Manual, so AnyBuddy's own money
 // (commission, sales tax held) reaches its bank only from here. The backend recomputes what is safe on every payout.
 type Balance = {
   available: number; pending: number; held: number; reserve: number; safeToPayOut: number;

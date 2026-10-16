@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, Warning, Clock, XCircle, PaperPlaneTilt, ArrowCounterClockwise } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { useLoad } from "@/lib/useLoad";
-import { date, money, phone } from "@/lib/format";
+import { date, dateAt, money, phone } from "@/lib/format";
 import { PageHead, Empty, LoadError, SkeletonRows } from "@/components/ui";
 import { type Payout, type StripePayout, vendorOf, jobOf, ageText, isLate, LATE_HOURS, payoutMode } from "./data";
 import { PaySheet } from "./PaySheet";
@@ -99,7 +99,7 @@ function ManualTable({ status: tab, tabs, onChange }: { status: ManualStatus; ta
                       <td><b>{v.name}</b>{v.phone && <><br /><span className="hint">{phone(v.phone)}</span></>}</td>
                       <td>{j.number ? <span className="mono">{j.number}</span> : "—"}{j.service && <><br /><span className="hint">{j.service}</span></>}</td>
                       <td className="r"><b>{money(p.amount)}</b></td>
-                      <td className="hs">{tab === "paid" && p.paidAt ? date(p.paidAt) : j.doneAt ? `${date(j.doneAt)} · ${new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(new Date(j.doneAt))} ET` : "—"}</td>
+                      <td className="hs">{tab === "paid" && p.paidAt ? date(p.paidAt) : j.doneAt ? `${dateAt(j.doneAt)} ET` : "—"}</td>
                       <td>{tab === "requested" ? <span className={`chip ${lateRow ? "c-bad" : "c-warn"}`}><Clock size={12} />{ageText(j.doneAt) || "—"}</span> : tab === "paid" ? <span className="mono">{p.reference || "—"}</span> : <span className="muted">{p.note || p.reason || "—"}</span>}</td>
                       <td className="r">{tab === "requested" && <button className="btn sm p" onClick={(e) => { e.stopPropagation(); setOpen(p); }}>Pay</button>}</td>
                     </tr>

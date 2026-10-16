@@ -13,7 +13,7 @@ export type Catalog = { cats: Category[]; retired: Category[]; services: Service
 
 export const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 // Same order rule as the customer apps (services/user/homepage.ts byCategoryPriority): Plumbing, Electrical, then A–Z.
-// The owner can't reorder yet: that needs a sort field on the server (FEA-42).
+// Admins can't reorder yet: that needs a sort field on the server.
 const rank = (n: string) => (/plumb/i.test(n) ? 0 : /electric/i.test(n) ? 1 : 2);
 export const byPriority = (a: Category, b: Category) => rank(a.categoryName) - rank(b.categoryName) || a.categoryName.localeCompare(b.categoryName);
 export const pinned = (n: string) => rank(n) < 2;
