@@ -3,27 +3,16 @@ import { useEffect, useRef, useState } from "react";
 import { TextB, TextItalic, ListBullets, ListNumbers, LinkSimple, LinkBreak, ArrowCounterClockwise, ArrowClockwise } from "@phosphor-icons/react";
 import { useToast } from "@/components/Toast";
 import s from "./content.module.css";
+import DOMPurify from "dompurify";
 
-const URL_ATTRS = ["href", "src", "action", "formaction", "xlink:href"];
 const parse = (html: string) => { const t = document.createElement("template"); t.innerHTML = html; return t.content; };
 
-/** Strips <script>, on* handlers and javascript: URLs. Returns the input untouched when there is nothing to strip,
- *  so publishing an unedited page sends the stored text byte for byte. */
+/** Removes anything that can run code (scripts, frames, on* handlers, javascript:/data: links) with DOMPurify.
+ *  Returns the input untouched when nothing was removed, so publishing an unedited page sends the stored text byte
+ *  for byte. */
 export function clean(html: string) {
-  const doc = parse(html);
-  let dirty = false;
-  doc.querySelectorAll("script").forEach((n) => { n.remove(); dirty = true; });
-  doc.querySelectorAll("*").forEach((el) => {
-    for (const a of [...el.attributes]) {
-      // Browsers ignore whitespace/control characters inside the scheme, so "java\tscript:" still runs.
-      const js = URL_ATTRS.includes(a.name) && /^javascript:/i.test(a.value.replace(/[\u0000- ]/g, ""));
-      if (a.name.startsWith("on") || js) { el.removeAttribute(a.name); dirty = true; }
-    }
-  });
-  if (!dirty) return html;
-  const box = document.createElement("div");
-  box.append(doc);
-  return box.innerHTML;
+  const safe = DOMPurify.sanitize(html);
+  return DOMPurify.removed.length ? safe : html;
 }
 
 export const isBlank = (html: string) => !parse(html).textContent?.trim();
