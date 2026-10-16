@@ -19,6 +19,9 @@ type Onboarding = { stage: "details" | "services" | "documents" | "submitted"; s
 type Detail = { ProviderDetails: Buddy & {
   availability?: { day: number; isOpen: boolean; from: string; to: string }[]; averageRating?: number; totalRatings?: number; totalEarning?: number;
   travelMiles?: number; licences?: { categoryId: string; url?: string | null }[]; onboarding?: Onboarding | null;
+  payoutAccountStatus?: "not_started" | "pending" | "needs_info" | "verified" | "disabled"; payoutType?: "individual" | "company" | null;
+  payoutRequirements?: { code: string; text: string }[]; bankName?: string | null; bankLast4?: string | null;
+  cardBrand?: string | null; cardLast4?: string | null; stripeAccountId?: string | null;
 }; categories?: { categoryName: string }[] };
 type Offer = { _id: string; serviceName: string; price: number; durationType: number };
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; // backend day 0 = Sunday (moment .day())
@@ -30,6 +33,9 @@ export const docsFor = (b: Buddy, v3 = b.signupFlow === 3) => (v3 || b.selfieDoc
 export const docCount = (b: Buddy, v3?: boolean) => docsFor(b, v3).filter(([k]) => !!b[k]).length;
 const LICENCE: Record<LicenceRow["status"], [string, string]> = {
   missing: ["c-mut", "Not uploaded"], pending: ["c-warn", "Waiting for review"], approved: ["c-ok", "Approved"], needs_changes: ["c-bad", "Needs changes"],
+};
+const PAYOUT: Record<string, [string, string]> = {
+  not_started: ["c-mut", "Not started"], pending: ["c-warn", "Stripe is checking"], needs_info: ["c-bad", "Stripe needs more"], verified: ["c-ok", "Ready to be paid"], disabled: ["c-bad", "Payouts paused"],
 };
 const STAGE = { details: "Step 1 of 3 · Your details", services: "Step 2 of 3 · Services and rates", documents: "Step 3 of 3 · Documents", submitted: "Sign-up sent" };
 
@@ -165,6 +171,17 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
         {!ob.bookable && <p className="hint" style={{ marginTop: 6 }}>Customers see a Buddy once they&apos;re approved, have a profile photo and can get paid. Licensed services also need their license approved.</p>}
       </section>}
 
+      {(() => {
+        const p = data.ProviderDetails, st = PAYOUT[p.payoutAccountStatus ?? "not_started"] ?? PAYOUT.not_started;
+        return <section><h3 className={s.h3}>Payouts <span className={`chip ${st[0]}`}>{st[1]}</span></h3>
+          <dl className={s.kv}>
+            <dt>Bank</dt><dd>{p.bankLast4 ? `${p.bankName ?? "Bank"} ••••${p.bankLast4}` : <span className="muted">Not added</span>}</dd>
+            {p.cardLast4 && <><dt>Debit card</dt><dd>{`${p.cardBrand ?? "Card"} ••••${p.cardLast4}`}</dd></>}
+            <dt>Paid as</dt><dd>{p.payoutType === "company" ? "Business (EIN)" : p.payoutType === "individual" ? "Individual (SSN)" : <span className="muted">Not set</span>}</dd>
+            {!!p.payoutRequirements?.length && <><dt>Stripe still needs</dt><dd>{p.payoutRequirements.map((r) => r.text).join(", ")}</dd></>}
+            {p.stripeAccountId && <><dt>Stripe account</dt><dd><a href={`https://dashboard.stripe.com/connect/accounts/${p.stripeAccountId}`} target="_blank" rel="noopener noreferrer">{p.stripeAccountId} <ArrowSquareOut size={12} aria-hidden /></a></dd></>}
+          </dl></section>;
+      })()}
       <section><h3 className={s.h3}>Services &amp; their prices</h3>
         {data.offers.length ? <ul className={s.offers}>{data.offers.map((o) => <li key={o._id}><span>{o.serviceName}</span><b>{money(o.price)}{o.durationType === 2 ? "/day" : "/hr"}</b></li>)}</ul> : <p className="muted">No services added yet.</p>}
       </section>

@@ -162,7 +162,20 @@ export default function Fees() {
               {found.map((c) => <li key={c.code}><button type="button" className="btn ghost sm" style={{ width: "100%", justifyContent: "flex-start", whiteSpace: "normal", textAlign: "left" }} onClick={() => pick(c)}><span>{c.flag} {c.name} <span className="muted">{c.dial}</span></span></button></li>)}
               {!found.length && <li className="hint">No match for “{pc.q.trim()}”</li>}
             </ul>}
-            <span id="fpH" className="hint">Customers and Buddies can only sign up and log in with these. The US and Canada share +1. Also turn on these countries in Twilio: Verify → Geo permissions.</span>
+            <span id="fpH" className="hint">Customers and Buddies can only sign up and log in with these. The US and Canada share +1.</span>
+            {/* Owner, 16 Oct 2026: Twilio doesn't allow SMS geo permissions to change through its API (by design), so the
+                admin is told exactly which countries to switch in Twilio, with direct links. */}
+            {(() => {
+              const saved = chosenOf(data?.phoneCountries, all), name = (k: string) => all.find((x) => x.code === k)?.name ?? k;
+              const on = pc.chosen.filter((k) => !saved.includes(k)), off = saved.filter((k) => !pc.chosen.includes(k));
+              return (
+                <div className={on.length || off.length ? "note" : "hint"} style={{ flexDirection: "column", gap: 4 }} role={on.length || off.length ? "status" : undefined}>
+                  {on.length > 0 && <p>After saving, turn <b>on</b> in Twilio: {on.map(name).join(", ")}.</p>}
+                  {off.length > 0 && <p>After saving, turn <b>off</b> in Twilio: {off.map(name).join(", ")}.</p>}
+                  <p>Twilio settings: <a href="https://console.twilio.com/us1/develop/sms/settings/geo-permissions" target="_blank" rel="noopener noreferrer">SMS geo permissions</a> and <a href="https://console.twilio.com/us1/develop/verify/settings" target="_blank" rel="noopener noreferrer">Verify settings</a>. Twilio only allows this change by hand.</p>
+                </div>
+              );
+            })()}
             <button className="btn p" style={{ alignSelf: "flex-start" }} disabled={pc.busy || !pc.chosen.length} aria-busy={pc.busy}>{pc.busy ? "Saving…" : "Save countries"}</button>
           </form>
         </section>
