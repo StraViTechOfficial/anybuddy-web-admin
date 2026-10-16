@@ -44,7 +44,8 @@ Environment variables (put them in `.env.local`; names only, never commit values
 ## Build and deploy
 
 - `npm run build`, then `npm run start` (port 3300) to run the build locally.
-- Deployed on Vercel from the `staging` branch. Set the environment variables above in the Vercel project.
+- Hosted on Vercel, which deploys the production branch (currently `staging`; `main` after the move to the Any-Buddy
+  GitHub). Set the environment variables above in the Vercel project.
 
 ## Security notes
 
