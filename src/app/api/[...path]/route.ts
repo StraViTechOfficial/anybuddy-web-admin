@@ -5,7 +5,8 @@ import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
 const BACKEND = process.env.BACKEND_URL;
-const SESSION = "ab_admin"; // the full sign-in token
+const SESSION = "ab_admin"; // the full sign-in token, for a 12-hour session that renews while the admin is active
+const SESSION_AGE = 12 * 3600;
 const CODE = "ab_admin_code"; // a 15-minute token for the forgot-password code step
 const RESET = "ab_admin_reset"; // a 15-minute token issued once the code is checked. Only reset-password accepts it.
 const ALLOWED = /^(admin\/|uploads\/presign$)/; // only admin routes and photo upload links get through
@@ -19,6 +20,10 @@ const stageOf = (token: string): string | undefined => {
     return undefined;
   }
 };
+
+// The one reply allowed to carry full bank numbers: an admin pressing Show on a payout still to send. The backend
+// records each of these views.
+const BANK_REVEAL = /^admin\/payouts\/[0-9a-f]{24}\/bank$/;
 
 // Bank numbers never reach the browser in full: mask anything that looks like one.
 const BANK_KEYS = new Set(["account_number", "accountNumber", "routing_number", "routingNumber"]);
@@ -45,7 +50,8 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   const jar = await cookies();
   const code = jar.get(CODE)?.value;
   const reset = jar.get(RESET)?.value;
-  const token = code && CODE_ROUTES.test(path) ? code : reset && path === "admin/auth/reset-password" ? reset : jar.get(SESSION)?.value;
+  const session = jar.get(SESSION)?.value;
+  const token = code && CODE_ROUTES.test(path) ? code : reset && path === "admin/auth/reset-password" ? reset : session;
   const headers = new Headers({ "content-type": "application/json" });
   if (token) headers.set("authtoken", token);
   // Passes on the browser's IP address so the backend can rate-limit each person. The backend trusts it only when the
@@ -72,15 +78,16 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
     const busy = upstream.status === 429;
     return NextResponse.json({ status: 0, message: busy ? "Too many tries. Wait a few minutes and try again." : "Something went wrong. Try again." }, { status: busy ? 429 : 502 });
   }
-  // One exception: the manual-payout list needs the full account to pay from Citizens.
-  // The screen keeps it hidden until the admin presses Show. Everywhere else only the last 4 leave the server.
-  if (!(req.method === "GET" && path === "admin/payouts")) maskBank(json.data);
+  if (!(req.method === "GET" && BANK_REVEAL.test(path))) maskBank(json.data);
 
-  // Take any token out of the reply and keep it as a cookie instead.
-  const fresh: unknown = typeof json.data === "string" ? json.data : json.data?.token;
-  if (typeof fresh === "string") { if (typeof json.data === "object") delete json.data.token; else json.data = null; }
+  // Take any token out of the reply and keep it as a cookie instead. The session renews while in use, so a renewed
+  // token can also arrive in the X-Auth-Token header of an ordinary reply. That header counts only on calls made with
+  // the session itself, never with a code or reset token.
+  const inBody: unknown = typeof json.data === "string" ? json.data : json.data?.token;
+  if (typeof inBody === "string") { if (typeof json.data === "object") delete json.data.token; else json.data = null; }
+  const fresh = typeof inBody === "string" ? inBody : session && token === session ? upstream.headers.get("x-auth-token") : null;
   const res = NextResponse.json(json, { status: upstream.status });
-  if (typeof fresh === "string") {
+  if (fresh) {
     if (stageOf(fresh) === "otp") res.cookies.set(CODE, fresh, { ...cookieBase, maxAge: 15 * 60 });
     // A checked code is NOT a sign-in, although the old admin panel logged you in at this point. It only unlocks the
     // new-password step.
@@ -88,7 +95,7 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
       res.cookies.set(RESET, fresh, { ...cookieBase, maxAge: 15 * 60 });
       res.cookies.delete(CODE);
     } else {
-      res.cookies.set(SESSION, fresh, { ...cookieBase, maxAge: 30 * 24 * 3600 });
+      res.cookies.set(SESSION, fresh, { ...cookieBase, maxAge: SESSION_AGE });
       res.cookies.delete(CODE);
       res.cookies.delete(RESET);
     }

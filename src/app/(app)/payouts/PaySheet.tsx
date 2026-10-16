@@ -6,26 +6,34 @@ import { money, phone } from "@/lib/format";
 import { Modal } from "@/components/Modal";
 import { ReasonDialog } from "@/components/ReasonDialog";
 import { useToast } from "@/components/Toast";
-import { type Payout, jobOf, vendorOf, ageText } from "./data";
+import { type Bank, type Payout, bankOf, jobOf, vendorOf, ageText } from "./data";
 import s from "./payouts.module.css";
 
-/** Everything the admin needs to pay one Buddy from Citizens online banking and then record it. Bank numbers stay
- *  hidden until the admin presses "Show". */
+/** Everything the admin needs to pay one Buddy from Citizens online banking and then record it. The full bank numbers
+ *  are fetched only when the admin presses "Show", and are gone again on "Hide" or when the drawer closes. */
 export function PaySheet({ p, onClose, onDone }: { p: Payout; onClose: () => void; onDone: () => void }) {
   const toast = useToast();
   const v = vendorOf(p), job = jobOf(p);
-  const [show, setShow] = useState(false);
+  const [bank, setBank] = useState<Bank | null>(null);
+  const [revealing, setRevealing] = useState(false);
   const [mode, setMode] = useState<"pay" | "reject" | "reopen" | null>(null);
   const [text, setText] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const open = p.status === "requested";
+  const type = bank?.accountType || v.type;
 
   const copy = async (label: string, value?: string) => {
     if (!value) return;
     try { await navigator.clipboard.writeText(value); toast(`${label} copied`); } catch { toast(value); }
   };
-  const hide = (x?: string) => (x ? (show ? x : "•••• " + x.slice(-4)) : "Not given");
+  const dots = (last4?: string) => (last4 ? "•••• " + last4 : undefined);
+  async function reveal() {
+    if (bank) return setBank(null);
+    setRevealing(true);
+    try { setBank(await bankOf(p._id)); } catch (x) { toast((x as Error).message); }
+    setRevealing(false);
+  }
   async function submit() {
     if (mode === "pay" && !text.trim()) return setErr("Enter the Citizens transfer reference.");
     setBusy(true);
@@ -48,8 +56,8 @@ export function PaySheet({ p, onClose, onDone }: { p: Payout; onClose: () => voi
   const row = (label: string, value?: string, secret = false) => (
     <div className={s.bank}>
       <span className="muted">{label}</span>
-      <b className={secret ? "mono" : ""}>{secret ? hide(value) : value || "Not given"}</b>
-      {value && (!secret || show) && <button type="button" className="btn sm ghost" onClick={() => copy(label, value)} aria-label={`Copy ${label}`}><Copy size={14} /></button>}
+      <b className={secret ? "mono" : ""}>{value || "Not given"}</b>
+      {value && (!secret || bank) && <button type="button" className="btn sm ghost" onClick={() => copy(label, value)} aria-label={`Copy ${label}`}><Copy size={14} /></button>}
     </div>
   );
 
@@ -62,16 +70,16 @@ export function PaySheet({ p, onClose, onDone }: { p: Payout; onClose: () => voi
       <section>
         <h3 className={s.h3}>Send from Citizens online banking</h3>
         <div className={s.bankbox}>
-          {row("Account holder", v.holder)}
-          {row("Bank", v.bank)}
-          {row("Routing number", v.routing, true)}
-          {v.account ? row("Account number", v.account, true) : row("Account number", v.last4 ? `•••• ${v.last4}` : undefined)}
-          {v.type && row("Account type", v.type[0].toUpperCase() + v.type.slice(1))}
+          {row("Account holder", bank?.accountHolder || v.holder)}
+          {row("Bank", bank?.bankName || v.bank)}
+          {row("Routing number", bank?.routingNumber || dots(v.routing4), true)}
+          {row("Account number", bank?.accountNumber || dots(v.account4), true)}
+          {type && row("Account type", type[0].toUpperCase() + type.slice(1))}
           {row("Amount", p.amount?.toFixed(2))}
           {job.number && row("Memo", `Any-Buddy job ${job.number}`)}
         </div>
-        {v.account && <button type="button" className="btn sm" style={{ marginTop: 10 }} onClick={() => setShow(!show)}>{show ? <><EyeSlash size={14} />Hide numbers</> : <><Eye size={14} />Show numbers</>}</button>}
-        {open && (!v.routing || !v.account) && <div className="note" style={{ marginTop: 10 }}><Warning size={16} />Bank details are incomplete. Reject with a reason so the Buddy adds them.</div>}
+        {open && v.account4 && <button type="button" className="btn sm" style={{ marginTop: 10 }} onClick={reveal} disabled={revealing} aria-busy={revealing}>{bank ? <><EyeSlash size={14} />Hide numbers</> : <><Eye size={14} />Show numbers</>}</button>}
+        {open && (!v.routing4 || !v.account4) && <div className="note" style={{ marginTop: 10 }}><Warning size={16} />Bank details are incomplete. Reject with a reason so the Buddy adds them.</div>}
       </section>
       <dl className="kv">
         <dt>Buddy</dt><dd>{v.name}{v.phone && <> · {phone(v.phone)}</>}</dd>

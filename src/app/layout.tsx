@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Schibsted_Grotesk } from "next/font/google";
 import { ToastProvider } from "@/components/Toast";
 import "./globals.css";
@@ -13,10 +14,11 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#24345f" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="en-US" className={text.variable} suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: `try{var d=document.documentElement,t=localStorage.getItem("ab_theme"),s=localStorage.getItem("ab_side");if(t)d.dataset.theme=t;if(s)d.dataset.side=s}catch(e){}` }} /></head>
+      <head><script nonce={nonce} dangerouslySetInnerHTML={{ __html: `try{var d=document.documentElement,t=localStorage.getItem("ab_theme"),s=localStorage.getItem("ab_side");if(t)d.dataset.theme=t;if(s)d.dataset.side=s}catch(e){}` }} /></head>
       <body>
         <ToastProvider>{children}</ToastProvider>
       </body>

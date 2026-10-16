@@ -9,18 +9,22 @@ export type Payout = {
   reference?: string; note?: string; reason?: string;
   bookingId?: Maybe<string | { bookingId?: string; serviceName?: string; checkOutAt?: string }>;
   booking?: Maybe<{ bookingId?: string; serviceName?: string; checkOutAt?: string }>;
-  vendor?: Maybe<{ name?: string; phone?: string; email?: string; bankName?: string; accountHolder?: string; account_holder_name?: string; routingNumber?: string; routing_number?: string; accountNumber?: string; account_number?: string; accountLast4?: string; accountType?: string }>;
+  vendor?: Maybe<{ name?: string; phone?: string; email?: string; bankName?: string; accountHolder?: string; account_holder_name?: string; routingLast4?: string; accountLast4?: string; accountType?: string }>;
 };
 
 export const vendorOf = (p: Payout) => {
   const v = p.vendor ?? {};
   return {
     name: v.name || "Buddy", phone: v.phone, email: v.email, bank: v.bankName,
-    holder: v.accountHolder ?? v.account_holder_name, routing: v.routingNumber ?? v.routing_number,
-    // The backend sends the full account number only on "requested" rows. Paid and rejected rows carry accountLast4.
-    account: v.accountNumber ?? v.account_number, last4: v.accountLast4, type: v.accountType,
+    // The list carries only the last 4 digits of the bank numbers. The full numbers come from bankOf, one payout at a
+    // time, when the admin presses Show.
+    holder: v.accountHolder ?? v.account_holder_name, routing4: v.routingLast4, account4: v.accountLast4, type: v.accountType,
   };
 };
+/** The Buddy's full bank details for one payout still to send. The backend allows this only while the payout is waiting
+ *  to be sent, and records who looked. */
+export type Bank = { accountNumber?: string | null; routingNumber?: string | null; accountHolder?: string | null; bankName?: string | null; accountType?: string | null };
+export const bankOf = (id: string) => api<Bank>(`admin/payouts/${id}/bank`).then((r) => r.data);
 export const jobOf = (p: Payout) => {
   const b = p.booking ?? (typeof p.bookingId === "object" ? p.bookingId : null);
   return { number: b?.bookingId, service: b?.serviceName, doneAt: b?.checkOutAt ?? p.requestedAt ?? p.createdAt };

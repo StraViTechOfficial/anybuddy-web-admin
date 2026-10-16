@@ -113,7 +113,7 @@ function ManualTable({ status: tab, tabs, onChange }: { status: ManualStatus; ta
           </div>
         )}
       </section>
-      {open && <PaySheet p={open} onClose={() => setOpen(null)} onDone={() => { setOpen(null); list.reload(); onChange(); }} />}
+      {open && <PaySheet key={open._id} p={open} onClose={() => setOpen(null)} onDone={() => { setOpen(null); list.reload(); onChange(); }} />}
     </>
   );
 }
