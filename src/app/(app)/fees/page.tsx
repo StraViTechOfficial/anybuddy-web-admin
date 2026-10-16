@@ -6,27 +6,31 @@ import { money } from "@/lib/format";
 import { PageHead, LoadError } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { X } from "@phosphor-icons/react";
-import cat from "../catalog/catalog.module.css"; // the switch
+import cat from "../catalog/catalog.module.css"; // for the on/off switch styles
 
 type Config = { _id?: string; commission?: number; tax?: number; phoneCountries?: string[] };
 type Country = { code: string; name: string; flag: string; dial: string };
-// The server saves any value, so the limits are checked here: commission 0–50 %, tax 0–20 %.
+// The server saves any value, so we check the limits here. Commission must be 0–50% and tax 0–20%.
 const check = (v: string, max: number) => v.trim() !== "" && !isNaN(Number(v)) && Number(v) >= 0 && Number(v) <= max;
-// Stored as ISO codes ("US"); an older "+1" means the US, another dial code the first country with it. Never empty.
+// Countries are stored as ISO codes such as "US". An older "+1" means the US, and any other dial code means the first
+// country that uses it. The result is never empty, because it falls back to the US.
 const chosenOf = (stored: string[] | undefined, all: Country[]) => {
   const l = (stored ?? []).map((s) => (s === "+1" ? "US" : s.startsWith("+") ? all.find((c) => c.dial === s)?.code : s)).filter((c): c is string => !!c && all.some((k) => k.code === c));
   return l.length ? [...new Set(l)] : ["US"];
 };
-// Name, ISO code or dial code ("uni", "gb", "+44" or "44"); up to 8, leaving out the ones already chosen.
+// Searches by name, ISO code or dial code ("uni", "gb", "+44" or "44"). Returns up to 8 countries and leaves out the
+// ones already chosen.
 const matches = (q: string, all: Country[], chosen: string[]) => {
   const t = q.trim().toLowerCase(), d = t.replace(/^\+/, "");
   if (!t) return [];
   return all.filter((c) => !chosen.includes(c.code) && (c.name.toLowerCase().includes(t) || c.code.toLowerCase() === t || (/^\d+$/.test(d) && c.dial.slice(1).startsWith(d)))).slice(0, 8);
 };
 
-// Buddy sign-up (API v2.1): the distance choices and the states AnyBuddy works in. The apps read them from /api/config.
+// Buddy sign-up settings: the travel distance choices and the states AnyBuddy works in. The apps read them from
+// /api/config.
 type Signup = { travelMin: number; travelMax: number; travelStep: number; travelDefault: number; operatingStates: string[] };
-// v3: the Plaid switch comes with the same settings; plaidKeysSet only says whether the keys are on the server.
+// The newer sign-up flow adds the Plaid switch to the same settings. plaidKeysSet only says whether the Plaid keys are
+// set on the server.
 type SignupView = Signup & { plaidBank?: boolean; plaidKeysSet?: boolean };
 const STATES: [string, string][] = [["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"], ["CA", "California"], ["CO", "Colorado"], ["CT", "Connecticut"],
   ["DE", "Delaware"], ["DC", "District of Columbia"], ["FL", "Florida"], ["GA", "Georgia"], ["HI", "Hawaii"], ["ID", "Idaho"], ["IL", "Illinois"], ["IN", "Indiana"], ["IA", "Iowa"],
@@ -37,7 +41,8 @@ const STATES: [string, string][] = [["AL", "Alabama"], ["AK", "Alaska"], ["AZ", 
   ["WV", "West Virginia"], ["WI", "Wisconsin"], ["WY", "Wyoming"]];
 const stateName = (code: string) => STATES.find(([c]) => c === code)?.[1] ?? code;
 type Miles = { min: string; max: string; step: string; def: string };
-// The server's rules and words (POST admin/platform-config/buddy-signup); returns the field to mark and the message.
+// Applies the same rules and wording as the server (POST admin/platform-config/buddy-signup). Returns the field to
+// highlight and the message to show.
 function signupProblem(m: Miles, states: string[]): [keyof Miles | "states", string] | undefined {
   const [lo, hi, st, df] = [m.min, m.max, m.step, m.def].map((v) => (/^\d+$/.test(v.trim()) ? Number(v) : NaN));
   const whole = (["min", "max", "step", "def"] as const).find((k) => !/^\d+$/.test(m[k].trim()));
@@ -107,7 +112,7 @@ export default function Fees() {
     setBs((x) => ({ ...x, busy: false }));
   }
   const ok = !signupProblem(bs.m, bs.states);
-  // Saves on the switch itself (no Save button): the apps read it when a Buddy opens Get paid.
+  // Flipping the switch saves it straight away, with no Save button. The apps read it when a Buddy opens Get paid.
   async function setPlaid(on: boolean) {
     setPlaidBusy(true);
     try { const r = await api<SignupView>("admin/platform-config/plaid-bank", { method: "POST", body: { plaidBank: on } }); signup.set(r.data); toast(r.message); }
@@ -163,8 +168,8 @@ export default function Fees() {
               {!found.length && <li className="hint">No match for “{pc.q.trim()}”</li>}
             </ul>}
             <span id="fpH" className="hint">Customers and Buddies can only sign up and log in with these. The US and Canada share +1.</span>
-            {/* Twilio doesn't allow SMS geo permissions to change through its API (by design), so the
-                admin is told exactly which countries to switch in Twilio, with direct links. */}
+            {/* Twilio deliberately doesn't let its API change SMS geo permissions, so we tell the
+                admin exactly which countries to switch on in Twilio, with direct links. */}
             {(() => {
               const saved = chosenOf(data?.phoneCountries, all), name = (k: string) => all.find((x) => x.code === k)?.name ?? k;
               const on = pc.chosen.filter((k) => !saved.includes(k)), off = saved.filter((k) => !pc.chosen.includes(k));

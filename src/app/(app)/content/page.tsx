@@ -9,7 +9,8 @@ import { Editor, clean, isBlank } from "./Editor";
 const PAGES = [[1, "About us"], [2, "Terms of use"], [3, "Privacy policy"]] as const;
 // The server wraps the saved record: data.content is { _id, content: "<html>" }, not the text itself.
 type Cms = { content?: string | { content?: string } } | { content?: string }[];
-// Stored as the text customers see. Saving publishes at once; the apps show it on their next open.
+// Stored exactly as customers see it. Saving publishes it at once, and the apps show the new text the next time they
+// open.
 const text = (d: Cms | null | undefined) => {
   const c = Array.isArray(d) ? d[0]?.content : d?.content;
   return (typeof c === "object" ? c?.content : c) ?? "";

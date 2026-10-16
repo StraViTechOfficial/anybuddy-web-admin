@@ -4,7 +4,8 @@ import { money } from "@/lib/format";
 import type { Graph } from "@/lib/types";
 import s from "./charts.module.css";
 
-// One series → area + line, no legend (the title names it). Crosshair + tooltip on hover (dataviz skill).
+// A single series, drawn as an area with a line on top. It has no legend because the title names it. Hovering shows a
+// crosshair and a tooltip, following the dataviz guidelines.
 const W = 640, H = 240, L = 46, R = 16, T = 18, B = 30;
 
 export function ValueChart({ graph }: { graph: Graph }) {

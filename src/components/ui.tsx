@@ -2,7 +2,7 @@ import { CheckCircle, Clock, CalendarCheck, XCircle, Hourglass } from "@phosphor
 import type { BookingState } from "@/lib/format";
 import s from "./ui.module.css";
 
-/** Breadcrumb + the page's one h1 + its actions (WEBSITE-STANDARD: one title per page, left-aligned). */
+/** The breadcrumb, the page's single h1 and its actions. WEBSITE-STANDARD.md asks for one left-aligned title per page. */
 export function PageHead({ title, sub, children }: { title: string; sub?: React.ReactNode; children?: React.ReactNode }) {
   return (
     <div className={s.head}>
@@ -19,7 +19,7 @@ export function PageHead({ title, sub, children }: { title: string; sub?: React.
 const STATE: Record<BookingState, [string, React.ElementType]> = {
   Request: ["c-warn", Hourglass], Scheduled: ["c-info", CalendarCheck], Completed: ["c-ok", CheckCircle], Canceled: ["c-mut", XCircle], Expired: ["c-bad", Clock],
 };
-/** Status is shown as icon + word + colour, never colour alone. */
+/** Shows a status as an icon, a word and a colour, never colour alone. */
 export function StateChip({ state }: { state: BookingState }) {
   const [c, Icon] = STATE[state];
   return <span className={`chip ${c}`}><Icon size={12} weight="bold" aria-hidden />{state}</span>;

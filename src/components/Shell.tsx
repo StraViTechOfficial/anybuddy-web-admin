@@ -54,8 +54,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const inMore = extra.some((i) => active(i.href));
   const [moreOpen, setMoreOpen] = useState(false);
   const showMore = moreOpen || inMore;
-  // Laptop: the menu can shrink to an icon rail and back; kept per browser (the head script applies it before paint).
-  // The icon follows data-side in CSS (right before hydration); the label follows this state.
+  // On a laptop the menu can shrink to an icon rail and back. The choice is saved per browser, and the head script
+  // applies it before the first paint. The icon follows data-side in CSS, so it is right even before hydration. The
+  // label follows this state.
   const [rail, setRail] = useState(false);
   useEffect(() => { setRail(document.documentElement.dataset.side === "rail"); }, []);
   const toggleSide = () => {

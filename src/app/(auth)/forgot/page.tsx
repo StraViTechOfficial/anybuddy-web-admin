@@ -6,7 +6,7 @@ import { AuthCard } from "../AuthCard";
 import { useReady } from "@/components/useReady";
 import s from "../auth.module.css";
 
-// Step 1 of 3: email → code → new password. Nothing here signs you in (the old admin did).
+// Step 1 of 3 (email, then code, then new password). Nothing here signs you in, unlike the old admin panel.
 export default function Forgot() {
   const ready = useReady();
   const [err, setErr] = useState("");
@@ -19,7 +19,8 @@ export default function Forgot() {
     setBusy(true);
     setErr("");
     try {
-      // codeValidFor: seconds until "Send again" works (30 on a new code, what's left on a live one). Older servers send none.
+      // codeValidFor is the number of seconds until "Send again" works. It is 30 for a new code, or the time left on a code
+      // that is still valid. Older servers don't send it.
       const { data } = await api<{ codeValidFor?: number } | null>("admin/auth/forgot-password", { method: "POST", body: { email } });
       sessionStorage.setItem("ab_reset_email", email);
       sessionStorage.setItem("ab_code_until", String(Date.now() + (data?.codeValidFor ?? 30) * 1000));

@@ -4,7 +4,7 @@ import { Image as ImageIcon } from "@phosphor-icons/react";
 import { upload } from "@/lib/api";
 import s from "./catalog.module.css";
 
-/** Pick a photo, upload it straight away, keep the old one until the new upload succeeds. */
+/** Lets the admin pick a photo and uploads it straight away. The old photo stays until the new upload succeeds. */
 export function PhotoPick({ url, onChange, id }: { url?: string; onChange: (url: string) => void; id: string }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");

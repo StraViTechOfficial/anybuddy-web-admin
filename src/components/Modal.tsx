@@ -3,7 +3,8 @@ import { useEffect, useRef } from "react";
 import { X } from "@phosphor-icons/react";
 import s from "./Modal.module.css";
 
-/** Centred dialog (confirmations) or right-hand drawer (records). Esc and the backdrop close it; focus stays inside. */
+/** A centred dialog for confirmations, or a right-hand drawer for records. Esc and a click on the backdrop close it,
+ *  and focus stays inside. */
 export function Modal({ title, onClose, children, footer, drawer = false, sub }: {
   title: React.ReactNode; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode; drawer?: boolean; sub?: React.ReactNode;
 }) {

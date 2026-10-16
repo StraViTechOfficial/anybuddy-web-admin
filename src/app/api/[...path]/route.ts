@@ -1,13 +1,14 @@
-// Backend-for-frontend, same pattern as the provider web. The browser only calls /api/*; this handler
-// forwards to BACKEND_URL and keeps the admin token in an httpOnly cookie, so page scripts can never read it.
+// A backend-for-frontend proxy, built the same way as the Buddy web app. The browser only ever calls /api/*. This
+// handler forwards each call to BACKEND_URL and keeps the admin token in an httpOnly cookie, so page scripts can never
+// read it.
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
 const BACKEND = process.env.BACKEND_URL;
-const SESSION = "ab_admin"; // full token
-const CODE = "ab_admin_code"; // 15-minute forgot-password code token
-const RESET = "ab_admin_reset"; // 15-minute token after the code is checked; only reset-password accepts it
-const ALLOWED = /^(admin\/|uploads\/presign$)/; // only admin routes pass
+const SESSION = "ab_admin"; // the full sign-in token
+const CODE = "ab_admin_code"; // a 15-minute token for the forgot-password code step
+const RESET = "ab_admin_reset"; // a 15-minute token issued once the code is checked. Only reset-password accepts it.
+const ALLOWED = /^(admin\/|uploads\/presign$)/; // only admin routes and photo upload links get through
 const CODE_ROUTES = /^admin\/auth\/(verify-otp|resend-otp)$/;
 const cookieBase = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" as const, path: "/" };
 
@@ -37,7 +38,7 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   if (parts.some((p) => p === "." || p === ".." || /[\\/%]/.test(p))) return NextResponse.json({ status: 0, message: "Not found." }, { status: 404 });
   const path = parts.join("/");
   if (!BACKEND) return NextResponse.json({ status: 0, message: "BACKEND_URL is not set." }, { status: 500 });
-  // Admin routes, plus the public home feed read-only (it carries each service's "From $X" price).
+  // Admin routes are allowed, plus read-only access to the public home feed, which carries each service's "From $X" price.
   const publicRead = req.method === "GET" && path === "user/homepage";
   if (!ALLOWED.test(path) && !publicRead) return NextResponse.json({ status: 0, message: "Not found." }, { status: 404 });
 
@@ -47,7 +48,8 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   const token = code && CODE_ROUTES.test(path) ? code : reset && path === "admin/auth/reset-password" ? reset : jar.get(SESSION)?.value;
   const headers = new Headers({ "content-type": "application/json" });
   if (token) headers.set("authtoken", token);
-  // The browser's address, for per-person rate limits (the backend trusts it only with the shared key; unset, nothing extra).
+  // Passes on the browser's IP address so the backend can rate-limit each person. The backend trusts it only when the
+  // shared key comes with it. When the key isn't set, nothing extra is sent.
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip");
   if (process.env.PROXY_SHARED_SECRET && ip) {
     headers.set("x-ab-proxy-key", process.env.PROXY_SHARED_SECRET);
@@ -80,7 +82,8 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   const res = NextResponse.json(json, { status: upstream.status });
   if (typeof fresh === "string") {
     if (stageOf(fresh) === "otp") res.cookies.set(CODE, fresh, { ...cookieBase, maxAge: 15 * 60 });
-    // A checked code is NOT a sign-in: the old admin logged you in here. It only unlocks the new-password step.
+    // A checked code is NOT a sign-in, although the old admin panel logged you in at this point. It only unlocks the
+    // new-password step.
     else if (path === "admin/auth/verify-otp") {
       res.cookies.set(RESET, fresh, { ...cookieBase, maxAge: 15 * 60 });
       res.cookies.delete(CODE);

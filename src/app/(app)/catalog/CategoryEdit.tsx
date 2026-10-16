@@ -11,7 +11,8 @@ import { PhotoPick } from "./PhotoPick";
 import { Toggle } from "./ServiceForm";
 import s from "./catalog.module.css";
 
-// Licence switch + name and the hourly rate range. Rates are typed as text so "abc" gets the server's words.
+// The licence switch and name, and the hourly rate range. Rates are typed as text, so input such as "abc" gets the
+// server's own error message.
 export type Rules = { licenceRequired: boolean; licenceName: string; rateMin: string; rateMax: string };
 export const rulesOf = (c?: Category): Rules => ({
   licenceRequired: !!c?.licenceRequired, licenceName: c?.licenceName ?? "",
@@ -19,7 +20,8 @@ export const rulesOf = (c?: Category): Rules => ({
 });
 const dollars = (v: string) => (v.trim() === "" ? null : Number(v.trim()));
 export const rulesBody = (r: Rules) => ({ licenceRequired: r.licenceRequired, licenceName: r.licenceName.trim(), rateMin: dollars(r.rateMin), rateMax: dollars(r.rateMax) });
-/** The server's checks and words (categoryRulesSchema, 0–100000); whole dollars is this screen's own rule. */
+/** Applies the server's checks and wording (categoryRulesSchema, 0 to 100000). Requiring whole dollars is this
+ *  screen's own rule. */
 export function rulesProblem(r: Rules) {
   const [lo, hi] = [dollars(r.rateMin), dollars(r.rateMax)], set = [lo, hi].filter((v): v is number => v !== null);
   if (set.some((v) => !Number.isFinite(v))) return "Rates must be numbers.";
@@ -53,7 +55,8 @@ export function RulesFields({ name, r, set, err, was, count }: { name: string; r
   );
 }
 
-/** Buddy offers outside their category's range: listed for the admin, never changed by the server. */
+/** Lists Buddy prices that fall outside their category's range. The admin sees them here, and the server never
+ *  changes them. */
 export function OutOfRangeNote({ rows, where }: { rows: OutOfRange[]; where?: string }) {
   if (!rows.length) return null;
   return (
@@ -66,7 +69,8 @@ export function OutOfRangeNote({ rows, where }: { rows: OutOfRange[]; where?: st
   );
 }
 
-/** Rename, describe, photo, licence and rate range; retire or restore (update-status toggles isActive, nothing is deleted). */
+/** Edits a category's name, description, photo, licence and rate range, and retires or restores it. Retiring only
+ *  toggles isActive through update-status, so nothing is deleted. */
 export function CategoryEdit({ data, cat, onClose, onSaved }: { data: Catalog; cat: Category; onClose: () => void; onSaved: () => void }) {
   const toast = useToast();
   const [f, setF] = useState({ name: cat.categoryName, desc: cat.description ?? "", photo: cat.image || cat.icon });

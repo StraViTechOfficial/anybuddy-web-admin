@@ -9,8 +9,8 @@ import { dateTime, downloadCsv, phone } from "@/lib/format";
 import { PageHead, Empty, LoadError, SkeletonRows } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 
-// Buddy sign-up v3: everyone who verified their phone, newest first (GET admin/vendors/signups). City only:
-// the street and date of birth stay on the Buddy's own page.
+// Everyone who verified their phone in the newer Buddy sign-up flow, newest first (GET admin/vendors/signups). The list
+// shows only the city. The street address and date of birth stay on the Buddy's own page.
 type Progress = "phone" | "details" | "services" | "submitted" | "approved" | "rejected";
 type Row = { id: string; name: string | null; phone: string; countryCode?: string; email: string | null; city: string | null; state: string | null;
   travelMiles: number | null; notifications: "on" | "off"; progress: Progress; startedAt: string };
@@ -20,13 +20,14 @@ const FILTERS: [Filter, string][] = [["all", "All"], ["phone", "Phone only"], ["
 const PROGRESS: Record<Progress, string> = {
   phone: "Phone verified", details: "Name and address", services: "Services added", submitted: "Being verified", approved: "Verified", rejected: "Not approved",
 };
-const STATUS: Partial<Record<Progress, number>> = { approved: 1, rejected: 2 }; // the Buddy page's ?s= (0 waiting)
+const STATUS: Partial<Record<Progress, number>> = { approved: 1, rejected: 2 }; // the ?s= value on the Buddy page (0 means waiting)
 const LIMIT = 50;
 const NONE = "Not added yet";
 const city = (r: Row) => [r.city, r.state].filter(Boolean).join(", ") || null;
 const travels = (r: Row) => (r.travelMiles ? `${r.travelMiles} mi` : null);
 
-// Quoted CSV; a cell starting with = + - @ gets a leading ' so a spreadsheet never runs it as a formula.
+// Every CSV cell is quoted. A cell that starts with = + - or @ gets a leading ' so a spreadsheet never runs it as a
+// formula.
 const csv = (rows: Row[]) => [["Name", "Phone", "Email", "Home city", "Travels", "Notifications", "Progress", "Started (UTC)"], ...rows.map((r) =>
   [r.name, phone(r.phone, r.countryCode), r.email, city(r), travels(r), r.notifications === "on" ? "On" : "Off", PROGRESS[r.progress], r.startedAt])];
 
@@ -36,14 +37,14 @@ export default function Signups() {
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
-  const [term, setTerm] = useState(""); // the search, 250 ms after the last key
+  const [term, setTerm] = useState(""); // the search text, applied 250 ms after the last keystroke
   useEffect(() => { const t = setTimeout(() => { setTerm(search.trim()); setPage(1); }, 250); return () => clearTimeout(t); }, [search]);
   const { data, error, loading, reload } = useLoad(() => api<Reply>("admin/vendors/signups", { query: { progress: filter, q: term, page, limit: LIMIT } }), [filter, term, page]);
   const rows = data?.data.rows ?? [], counts = data?.data.counts, total = data?.count ?? 0, pages = Math.max(1, Math.ceil(total / LIMIT));
   const href = (r: Row) => `/buddies/${r.id}?s=${STATUS[r.progress] ?? 0}`;
   const pick = (f: Filter) => { setFilter(f); setPage(1); };
 
-  // The whole current filter, not just this page (the server gives up to 1000 rows per call).
+  // Exports everything in the current filter, not just this page. The server returns up to 1000 rows per call.
   async function exportCsv() {
     setBusy(true);
     try {

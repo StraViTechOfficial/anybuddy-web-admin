@@ -29,7 +29,8 @@ button.nav { width: 100%; border: 0; background: none; font: inherit; text-align
 .ib { width: 40px; height: 40px; border: 1px solid var(--line); background: var(--canvas); border-radius: 10px; display: grid; place-items: center; color: var(--ink2); flex: none; }
 .ib:hover { border-color: var(--field); }
 .menuBtn { display: none; }
-/* Collapse toggle on the menu's right edge (Linear/Notion); centred on the brand row (18px pad + 32px mark / 2 = 34px). */
+/* The collapse toggle sits on the menu's right edge, as in Linear and Notion. It is centred on the brand row
+   (18px padding plus half of the 32px mark = 34px). */
 .edge { position: absolute; top: 21px; right: -13px; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: var(--canvas); box-shadow: var(--shadow1); color: var(--ink2); display: grid; place-items: center; padding: 0; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
 .edge::before { content: ""; position: absolute; inset: -9px; border-radius: 50%; } /* 44px hit area */
 .edge:hover { background: var(--navy-1); color: var(--ink); border-color: var(--field); }
@@ -40,7 +41,7 @@ button.nav { width: 100%; border: 0; background: none; font: inherit; text-align
 .view { padding: 24px 28px 56px; display: flex; flex-direction: column; gap: 20px; max-width: 1400px; width: 100%; margin: 0 auto; }
 .view:focus { outline: none; }
 .scrim { display: none; }
-/* Icon rail: chosen with the toggle on a laptop, automatic on a tablet. */
+/* The icon rail. On a laptop the admin chooses it with the toggle, and on a tablet it is used automatically. */
 :global(:root[data-side="rail"]) .app { grid-template-columns: 72px minmax(0, 1fr); }
 :global(:root[data-side="rail"]) .brand b, :global(:root[data-side="rail"]) .lbl, :global(:root[data-side="rail"]) .caret { display: none; }
 :global(:root[data-side="rail"]) .brand { justify-content: center; padding: 18px 8px; }

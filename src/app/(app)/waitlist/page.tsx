@@ -21,7 +21,7 @@ export default function Waitlist() {
   const { data, error, loading, reload } = useLoad(() => api<Row[]>("admin/service-provider/waitlist", { query: { page, limit: LIMIT } }), [page]);
   const rows = data?.data ?? [], total = data?.count ?? 0, pages = Math.max(1, Math.ceil(total / LIMIT));
 
-  // The whole list, not just this page (the server gives up to 1000 rows per call).
+  // Exports the whole list, not just this page. The server returns up to 1000 rows per call.
   async function exportCsv() {
     setBusy(true);
     try {

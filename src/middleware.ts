@@ -7,7 +7,8 @@ export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const signedIn = req.cookies.has("ab_admin");
   const isPublic = PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/"));
-  // The reset page needs the code-step cookie, not a full session (the old admin let a reset token sign you in).
+  // The reset page needs the cookie from the code step, not a full session. The old admin panel let a reset token sign
+  // you in, which we no longer allow.
   if (pathname === "/reset" && !req.cookies.has("ab_admin_reset")) return NextResponse.redirect(new URL("/forgot", req.url));
   if (!signedIn && !isPublic) {
     const url = new URL("/login", req.url);

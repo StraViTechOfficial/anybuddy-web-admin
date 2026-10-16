@@ -16,7 +16,8 @@ const MANUAL: [ManualStatus, string][] = [["requested", "To send"], ["paid", "Pa
 
 export default function Page() { return <Suspense><Payouts /></Suspense>; }
 
-// The page follows the backend's PAYOUTS_MODE: manual (pay by hand from Citizens) or stripe (paid automatically).
+// The page follows the backend's PAYOUTS_MODE. In manual mode the admin pays by hand from Citizens. In stripe mode
+// Buddies are paid automatically.
 function Payouts() {
   const mode = useLoad(payoutMode);
   if (!mode.data) return <><PageHead title="Payouts" /><section className="box"><table className="stack"><tbody><SkeletonRows cols={5} /></tbody></table></section></>;
@@ -48,7 +49,8 @@ function StripeView() {
     api("admin/payouts/stripe", { query: { status: "attention", limit: 1 } }).then((r) => r.count ?? 0),
     api("admin/payouts", { query: { status: "requested", limit: 1 } }).then((r) => r.count ?? 0),
   ]).then(([attention, manual]) => ({ attention, manual })));
-  // Old hand payouts from before the switch: shown only while some are still to send (or while you're on that tab).
+  // Old manual payouts from before the switch to Stripe. They show only while some are still to send, or while the
+  // admin is on that tab.
   const tabs: Tab[] = [["recent", "Recent payouts"], ["attention", "Needs attention", counts.data?.attention ?? "–"]];
   if (tab === "manual" || counts.data?.manual) tabs.push(["manual", "Manual (old)", counts.data?.manual ?? "–"]);
   const bar = <>
@@ -116,7 +118,7 @@ function ManualTable({ status: tab, tabs, onChange }: { status: ManualStatus; ta
   );
 }
 
-// Stripe payouts: a transfer to the Buddy's Stripe account at check-out, then Stripe's own payout to their bank.
+// Stripe payouts. A transfer goes to the Buddy's Stripe account at check-out, and then Stripe pays it out to their bank.
 const STATUS: Record<StripePayout["status"], [string, string, React.ElementType]> = {
   pending: ["c-warn", "Waiting", Clock], sent: ["c-info", "Sent", PaperPlaneTilt], paid: ["c-ok", "Paid", CheckCircle],
   failed: ["c-bad", "Failed", XCircle], reversed: ["c-mut", "Reversed", ArrowCounterClockwise],

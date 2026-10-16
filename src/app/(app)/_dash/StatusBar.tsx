@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { BookingState } from "@/lib/format";
 import s from "./charts.module.css";
 
-// Colours checked with the dataviz validator; every segment also has a labelled legend row (never colour alone).
+// The colours pass the dataviz validator. Every segment also has a labelled legend row, so colour is never the only cue.
 const COLOR: Record<BookingState, string> = { Request: "--m-req", Scheduled: "--m-sch", Completed: "--m-done", Expired: "--m-exp", Canceled: "--m-cxl" };
 
 export function StatusBar({ counts }: { counts: [BookingState, number][] }) {

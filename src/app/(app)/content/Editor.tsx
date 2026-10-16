@@ -23,7 +23,7 @@ const DROP = new Set(["SCRIPT", "STYLE", "META", "LINK", "TITLE", "HEAD", "XML",
 function tidy(src: Node, out: Node) {
   src.childNodes.forEach((n) => {
     if (n.nodeType === Node.TEXT_NODE) return out.appendChild(document.createTextNode(n.textContent ?? ""));
-    if (!(n instanceof Element) || DROP.has(n.tagName) || n.tagName.includes(":")) return; // o:p and other Office tags
+    if (!(n instanceof Element) || DROP.has(n.tagName) || n.tagName.includes(":")) return; // skips o:p and other Microsoft Office tags
     // Google Docs wraps the whole paste in <b style="font-weight:normal">.
     const tag = n.tagName === "B" && /font-weight:\s*(normal|400)/.test(n.getAttribute("style") ?? "") ? undefined : KEEP[n.tagName];
     if (!tag) return tidy(n, out);
@@ -78,8 +78,8 @@ export function Editor({ value, onChange, disabled, label }: Props) {
     sync();
   };
 
-  // Chrome builds a new list inside the paragraph it came from (<p><ul>…</ul></p>, invalid HTML the site would render
-  // oddly). Lift that one list out, keeping the caret where it was.
+  // Chrome puts a new list inside the paragraph it started from (<p><ul>…</ul></p>). That is invalid HTML and the site
+  // would render it oddly, so we lift that one list out and keep the caret where it was.
   function liftList() {
     const sel = document.getSelection();
     const at = sel?.rangeCount ? sel.getRangeAt(0) : null;

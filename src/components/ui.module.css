@@ -4,7 +4,7 @@
 .acts { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .empty { padding: 40px 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .eic { width: 44px; height: 44px; border-radius: 12px; background: var(--soft); display: grid; place-items: center; color: var(--mute); }
-/* PasswordInput: the eye sits inside the field, right edge. */
+/* PasswordInput: the eye button sits inside the field, at its right edge. */
 .pw { position: relative; display: block; }
 .pw input { padding-right: 44px; width: 100%; }
 .eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; display: grid; place-items: center; border: 0; background: none; color: var(--mute); border-radius: 6px; cursor: pointer; }

@@ -26,7 +26,8 @@ function Bookings() {
   const [open, setOpen] = useState<string | null>(q.get("open"));
   useEffect(() => { const t = setTimeout(() => setTerm(search.trim()), 250); return () => clearTimeout(t); }, [search]);
 
-  // The list endpoint takes one status at a time; status 4 holds both customer/Buddy cancels and expiries.
+  // The list endpoint takes one status at a time. Status 4 holds bookings canceled by the customer or the Buddy, and
+  // expired ones too.
   const { data, error, loading, reload } = useLoad(async () => {
     const lists = await Promise.all([1, 2, 3, 4].map((st) => api<Booking[]>("admin/booking-management/list-bookings", { query: { status: st, search: term, limit: 200 } }).then((r) => (r.data || []).map((b) => ({ ...b, status: st })))));
     return lists.flat().map((b) => ({ ...b, state: bookingState(b) })) as Row[];
@@ -45,7 +46,7 @@ function Bookings() {
       if (/INPUT|TEXTAREA|SELECT/.test((e.target as HTMLElement).tagName) || e.metaKey || e.ctrlKey || open) return;
       if (e.key === "j") setSel((i) => Math.min(i + 1, rows.length - 1));
       else if (e.key === "k") setSel((i) => Math.max(i - 1, 0));
-      else if (e.key === "Enter" && rows[sel] && !/BUTTON|^A$/.test((e.target as HTMLElement).tagName)) { e.preventDefault(); setOpen(rows[sel]._id); } // preventDefault: the same keypress must not "click" the drawer's first button
+      else if (e.key === "Enter" && rows[sel] && !/BUTTON|^A$/.test((e.target as HTMLElement).tagName)) { e.preventDefault(); setOpen(rows[sel]._id); } // without preventDefault, the same keypress would also press the drawer's first button
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);

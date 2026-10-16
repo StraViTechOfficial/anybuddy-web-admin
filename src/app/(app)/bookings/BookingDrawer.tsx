@@ -20,7 +20,8 @@ type Detail = {
   serviceProvider?: Person; userDetails?: Person;
 };
 const at = dateAt;
-// The Buddy's payout: stripe mode is sent to their Stripe account, then paid at their bank; manual mode is paid by hand.
+// The Buddy's payout. In Stripe mode it goes to their Stripe account and is then paid out to their bank. In manual
+// mode the admin pays it by hand.
 const payout = (b: Detail) => {
   const amt = money(b.payoutAmount ?? b.vendorPriceAfterDetection ?? 0);
   const when = (d?: string | null) => (d ? ` · ${at(d)}` : "");
@@ -34,7 +35,7 @@ const payout = (b: Detail) => {
   }
 };
 
-/** Everything about one booking. Cancel / refund from here needs the admin endpoint. */
+/** Shows everything about one booking. Cancelling or refunding from here would need the admin endpoint. */
 export function BookingDrawer({ id, onClose }: { id: string; onClose: () => void }) {
   const toast = useToast();
   const { data: b, error, reload } = useLoad(() => api<Detail | Detail[]>("admin/booking-management/detail", { query: { bookingId: id } }).then((r) => (Array.isArray(r.data) ? r.data[0] : r.data)), [id]);

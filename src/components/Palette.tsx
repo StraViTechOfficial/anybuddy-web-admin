@@ -13,7 +13,8 @@ const PAGES: Opt[] = [...main({}), ...more({}), { href: "/account", label: "Acco
   .map(({ label, href }) => ({ group: "Pages", label, href }));
 type Person = { _id: string; firstName?: string; lastName?: string; email?: string };
 
-// ⌘K / "/": jump to a page, or find a Buddy or customer by name or email (server search, 250 ms after typing stops).
+// Opens with ⌘K or "/". It jumps to a page, or finds a Buddy or customer by name or email. The server search runs
+// 250 ms after typing stops.
 export function Palette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [q, setQ] = useState("");

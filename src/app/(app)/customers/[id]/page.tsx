@@ -12,8 +12,8 @@ import { useToast } from "@/components/Toast";
 
 type Detail = Person & { address?: { street?: string; city?: string; state?: string }; postalCode?: string; isActive?: number; createdAt?: string };
 
-// ponytail: bookings are found by loading each status list and filtering here; fine at today's volume,
-// switch to a customerId filter on list-bookings when there are thousands.
+// ponytail: we find this customer's bookings by loading each status list and filtering here. That is fine at today's
+// volume. Once there are thousands of bookings, switch to a customerId filter on list-bookings.
 async function load(id: string) {
   const [d, ...lists] = await Promise.all([
     api<Detail | Detail[]>("admin/customer-management/user-details", { query: { customerId: id } }),

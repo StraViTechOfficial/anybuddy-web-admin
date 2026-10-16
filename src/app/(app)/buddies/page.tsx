@@ -48,7 +48,7 @@ function Buddies() {
       .then((c) => setCounts(Object.fromEntries(c)));
   }, [rows.length]);
 
-  // j / k move, A approves, R opens the reject step (waiting tab only).
+  // Keyboard shortcuts: j and k move through the list, A approves, and R opens the reject step (waiting tab only).
   useEffect(() => {
     if (tab !== "0") return;
     const key = (e: KeyboardEvent) => {

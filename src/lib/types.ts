@@ -1,4 +1,5 @@
-// Shapes of the admin API replies this app reads (backend: routes/admin/*). Only the fields screens use.
+// The shapes of the admin API replies this app reads (backend routes/admin/*). Only the fields the screens use are
+// listed.
 export type Person = { _id: string; firstName?: string; lastName?: string; email?: string; phone?: string; countryCode?: string };
 
 export type Booking = {
@@ -19,7 +20,7 @@ export type Booking = {
   cancelReason?: string | null;
   serviceProvider?: Person;
   userDetails?: Person;
-  status?: number; // not in list rows; the list query sets it
+  status?: number; // not in list rows, because the list query already sets it
 };
 
 export type Buddy = Person & {
@@ -30,7 +31,7 @@ export type Buddy = Person & {
   IdProofFront?: string | null;
   IdProofBack?: string | null;
   selfieDoc?: string | null; // live selfie
-  signupFlow?: 3 | null; // v3 sign-ups (they take a selfie)
+  signupFlow?: 3 | null; // 3 for the newer sign-up flow, which takes a selfie
   certificate?: string | null;
   additionalDoc?: string | null;
   isActive?: number;

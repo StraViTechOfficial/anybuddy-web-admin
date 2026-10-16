@@ -6,14 +6,15 @@ import { AuthCard } from "../AuthCard";
 import { useReady } from "@/components/useReady";
 import s from "../auth.module.css";
 
-// Step 2 of 3. A correct code unlocks the new-password step only; it is not a sign-in (the proxy keeps it apart).
+// Step 2 of 3. A correct code only unlocks the new-password step. It is not a sign-in, and the proxy keeps the two apart.
 export default function Code() {
   const ready = useReady();
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
-  // The server says how long until a new code may be sent (codeValidFor, seconds). Kept per tab as a time, so a reload
-  // keeps the countdown; with none stored the button is ready and a live code answers 429 with the seconds left.
+  // The server says how many seconds remain until a new code may be sent (codeValidFor). We keep that per tab as a
+  // time, so a reload keeps the countdown. If nothing is stored, the button is ready, and if the last code is still
+  // valid the server answers 429 with the seconds left.
   const [until, setUntil] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const left = Math.ceil(Math.max(0, until - now) / 1000);

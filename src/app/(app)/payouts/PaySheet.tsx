@@ -9,7 +9,8 @@ import { useToast } from "@/components/Toast";
 import { type Payout, jobOf, vendorOf, ageText } from "./data";
 import s from "./payouts.module.css";
 
-/** Everything needed to pay one Buddy from Citizens online banking, then record it. Bank numbers stay hidden until "Show". */
+/** Everything the admin needs to pay one Buddy from Citizens online banking and then record it. Bank numbers stay
+ *  hidden until the admin presses "Show". */
 export function PaySheet({ p, onClose, onDone }: { p: Payout; onClose: () => void; onDone: () => void }) {
   const toast = useToast();
   const v = vendorOf(p), job = jobOf(p);
@@ -29,14 +30,15 @@ export function PaySheet({ p, onClose, onDone }: { p: Payout; onClose: () => voi
     if (mode === "pay" && !text.trim()) return setErr("Enter the Citizens transfer reference.");
     setBusy(true);
     try {
-      // Today's backend reads `reference` for paid (routes/admin/payouts.ts schema).
+      // The current backend reads `reference` when a payout is marked paid (see the schema in routes/admin/payouts.ts).
       const body = mode === "pay" ? { status: "paid", reference: text.trim() } : { status: "requested" };
       await api("admin/payouts/status", { method: "PUT", body: { payoutId: p._id, ...body } });
       toast(mode === "pay" ? `Marked paid · ${v.name} is told the money is on its way` : `Back in “To send” for ${v.name}`);
       onDone();
     } catch (x) { setErr((x as Error).message); setBusy(false); }
   }
-  // Throws on failure so ReasonDialog shows the error inside itself. The backend reads `note` for rejected.
+  // Throws on failure, so ReasonDialog shows the error inside the dialog. The backend reads `note` when a payout is
+  // rejected.
   async function reject(note: string) {
     await api("admin/payouts/status", { method: "PUT", body: { payoutId: p._id, status: "rejected", note } });
     toast(`Rejected · ${v.name} is asked to fix their bank details`);
@@ -96,7 +98,7 @@ export function PaySheet({ p, onClose, onDone }: { p: Payout; onClose: () => voi
         </section>
       )}
       {mode === "reject" && (
-        // Mirrors the backend notice (controller/admin/payouts.ts): job payouts vs withdrawals word it differently.
+        // Matches the backend's notice (controller/admin/payouts.ts), which words job payouts and withdrawals differently.
         <ReasonDialog title={`Reject ${money(p.amount)} payout to ${v.name}`} onClose={() => setMode(null)} onConfirm={reject}
           next={p.auto === false
             ? <>{v.name} gets an email and app notice that the withdrawal wasn&apos;t paid, with your reason. The amount goes back to their balance.</>

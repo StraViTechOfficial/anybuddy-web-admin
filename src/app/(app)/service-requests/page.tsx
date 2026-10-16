@@ -10,9 +10,10 @@ import { Modal } from "@/components/Modal";
 import { ReasonDialog } from "@/components/ReasonDialog";
 import { byPriority, norm, rangeText, type Category, type Service } from "../catalog/data";
 
-// "Request a new service": a Buddy asks for a service missing from the catalogue at their hourly rate. Approve adds it
-// (new, or mapped to one already in the list) and the Buddy's offer at that rate; Decline sends the Buddy a reason.
-// categoryId and hourlyRate are null when the Buddy picked "Not in the list": Approve then needs a category.
+// With "Request a new service", a Buddy asks for a service that is missing from the catalogue, at their own hourly
+// rate. Approve adds the service (as a new one, or mapped to one already in the list) together with the Buddy's offer
+// at that rate. Decline sends the Buddy a reason. categoryId and hourlyRate are null when the Buddy picked "Not in the
+// list", and then Approve needs a category.
 type Row = {
   _id: string; name: string; categoryId: string | null; hourlyRate: number | null; status: "pending" | "approved" | "declined"; declineReason?: string | null; createdAt: string;
   category?: { categoryName: string; rateMin?: number | null; rateMax?: number | null };
@@ -91,7 +92,8 @@ export default function ServiceRequests() {
   );
 }
 
-/** Approve as a new service (name and category can be edited) or map it to a service already in the list. */
+/** Approves the request as a new service (the name and category can be edited), or maps it to a service already in
+ *  the list. */
 function Approve({ row, cats, services, onClose, onDone }: { row: Row; cats: Category[]; services: Service[]; onClose: () => void; onDone: (name: string) => void }) {
   const same = services.find((s) => norm(s.serviceName) === norm(row.name));
   const [mode, setMode] = useState<"new" | "existing">(same ? "existing" : "new");
@@ -102,7 +104,7 @@ function Approve({ row, cats, services, onClose, onDone }: { row: Row; cats: Cat
   const [busy, setBusy] = useState(false);
   const cat = cats.find((c) => c._id === (mode === "new" ? categoryId : services.find((s) => s._id === existing)?.categoryId));
   const range = cat && rangeText(cat.rateMin, cat.rateMax);
-  // No rate asked: the server uses the middle of the category's range (controller/admin/serviceRequests.ts).
+  // We don't ask for a rate here. The server uses the middle of the category's range (controller/admin/serviceRequests.ts).
   const mid = cat && (cat.rateMin != null && cat.rateMax != null ? Math.round((cat.rateMin + cat.rateMax) / 2) : cat.rateMin ?? cat.rateMax);
   const rate = row.hourlyRate ?? mid;
 

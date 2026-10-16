@@ -12,8 +12,8 @@ import s from "./notifications.module.css";
 type Sent = { _id: string; title: string; message: string; createdAt?: string; isAll?: number };
 type Aud = "customers" | "buddies" | "everyone";
 
-// The server sends to everyone (isAll 1) or to a list of ids (isAll 0), so "all customers" and "all Buddies"
-// are that list, read from list-customers / list-buddy.
+// The server sends either to everyone (isAll 1) or to a list of ids (isAll 0). So "all customers" and "all Buddies"
+// are sent as a list of ids, read from list-customers and list-buddy.
 async function audience() {
   const [c, b] = await Promise.all([
     api<{ _id: string }[]>("admin/notification-management/list-customers", { query: { limit: 1000 } }).catch(() => ({ data: [] as { _id: string }[] })),

@@ -30,7 +30,7 @@ export async function api<T = unknown>(path: string, { method = "GET", body, que
   return { data: json.data as T, count: json.count, message: json.message };
 }
 
-// Presigned upload straight to S3 (the file never passes through our servers). Catalog photos are public.
+// Uploads straight to S3 with a presigned URL, so the file never passes through our servers. Catalog photos are public.
 export async function upload(file: File, folder: "catalog" = "catalog"): Promise<string> {
   const { data } = await api<{ uploadUrl: string; fileUrl: string }>("uploads/presign", {
     method: "POST",

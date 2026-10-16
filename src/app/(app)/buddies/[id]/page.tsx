@@ -9,7 +9,8 @@ export default function BuddyPage({ params }: { params: Promise<{ id: string }> 
   return <Suspense><Inner id={id} /></Suspense>;
 }
 
-// ?s= approval status (0 waiting, 1 approved, 2 rejected) and ?a= active flag come from the list/search that linked here.
+// The ?s= approval status (0 waiting, 1 approved, 2 rejected) and the ?a= active flag come from the list or search
+// that linked here.
 function Inner({ id }: { id: string }) {
   const q = useSearchParams();
   const status = Number(q.get("s") ?? 1) as 0 | 1 | 2, active = Number(q.get("a") ?? 1);

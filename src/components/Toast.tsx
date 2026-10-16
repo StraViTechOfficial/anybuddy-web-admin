@@ -6,7 +6,8 @@ type Show = (message: string, undo?: () => void) => void;
 const Ctx = createContext<Show>(() => {});
 export const useToast = () => useContext(Ctx);
 
-// One message at a time, 5 s, optional Undo. Announced politely to screen readers.
+// Shows one message at a time for 5 seconds, with an optional Undo. Screen readers announce it politely, without
+// interrupting.
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [msg, setMsg] = useState<{ text: string; undo?: () => void } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);

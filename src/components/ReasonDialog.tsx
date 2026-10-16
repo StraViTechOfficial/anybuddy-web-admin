@@ -2,7 +2,8 @@
 import { useCallback, useRef, useState } from "react";
 import { Modal } from "./Modal";
 
-/** Confirm step for one negative action (reject, cancel…) with its reason. Opens only after the admin picks that action. */
+/** The confirm step for one negative action (such as reject or cancel), with its reason. It opens only after the admin
+ *  picks that action. */
 export function ReasonDialog({ title, next, label, placeholder, hint, required, missing, max, confirm, onConfirm, onClose }: {
   title: string; next: React.ReactNode; label: string; placeholder?: string; hint: string; max?: number;
   required?: boolean; missing?: string; confirm: string; onConfirm: (reason: string) => Promise<void>; onClose: () => void;
@@ -10,7 +11,7 @@ export function ReasonDialog({ title, next, label, placeholder, hint, required, 
   const [text, setText] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  // Stable close so Modal's focus effect runs once; blocked while saving.
+  // A stable close function, so Modal's focus effect runs only once. Closing is blocked while saving.
   const busyRef = useRef(false), closeRef = useRef(onClose);
   closeRef.current = onClose;
   const close = useCallback(() => { if (!busyRef.current) closeRef.current(); }, []);

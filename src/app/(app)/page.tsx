@@ -29,7 +29,8 @@ async function loadAll() {
     summary: summary.data, graph: graph.data, bookings,
     feesSet: !!fees.data && Object.keys(fees.data).length > 0,
     pending: pending.count, support: support.count,
-    // Manual: payouts to send. Stripe: payouts needing attention (plus old manual ones still to send).
+    // In manual mode this counts payouts still to send. In Stripe mode it counts payouts that need attention, plus any old
+    // manual ones still to send.
     toPay: { ...toPay, what: toPay.mode === "stripe" ? (toPay.n === 1 ? "needs attention" : "need attention") : "to send" },
   };
 }

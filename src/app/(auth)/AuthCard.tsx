@@ -1,6 +1,7 @@
 import s from "./auth.module.css";
 
-// One centred card on white with the full-colour logo; a navy band across the lower page (WEBSITE-STANDARD, log-in pages).
+// One centred card on white with the full-colour logo, and a navy band across the lower part of the page. This follows
+// the log-in page rules in WEBSITE-STANDARD.md.
 export function AuthCard({ title, sub, children }: { title: string; sub?: React.ReactNode; children: React.ReactNode }) {
   return (
     <main className={s.page}>

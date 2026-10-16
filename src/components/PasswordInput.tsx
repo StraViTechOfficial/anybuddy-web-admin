@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Eye, EyeSlash } from "@phosphor-icons/react";
 import s from "./ui.module.css";
 
-/** A password field with a show/hide eye (on every password field). Takes the input's own props. */
+/** A password field with an eye button to show or hide the password. Every password field uses it, and it takes the
+ *  input's own props. */
 export function PasswordInput(props: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
   const [show, setShow] = useState(false);
   return (

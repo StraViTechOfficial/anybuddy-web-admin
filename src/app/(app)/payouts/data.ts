@@ -1,6 +1,6 @@
-// Manual payouts while Stripe Connect is on hold: one "requested"
-// payout per completed job; the admin pays it from Citizens online banking and records the reference.
-// The backend reply is still settling, so every field is read defensively in one place.
+// Manual payouts, used while Stripe Connect is on hold. Each completed job creates one "requested" payout. The admin
+// pays it from Citizens online banking and records the reference. The backend's reply format may still change, so
+// every field is read defensively here, in one place.
 import { api } from "@/lib/api";
 
 type Maybe<T> = T | null | undefined;
@@ -17,7 +17,7 @@ export const vendorOf = (p: Payout) => {
   return {
     name: v.name || "Buddy", phone: v.phone, email: v.email, bank: v.bankName,
     holder: v.accountHolder ?? v.account_holder_name, routing: v.routingNumber ?? v.routing_number,
-    // Full number only on "requested" rows; paid/rejected rows carry accountLast4 (backend).
+    // The backend sends the full account number only on "requested" rows. Paid and rejected rows carry accountLast4.
     account: v.accountNumber ?? v.account_number, last4: v.accountLast4, type: v.accountType,
   };
 };
@@ -26,7 +26,7 @@ export const jobOf = (p: Payout) => {
   return { number: b?.bookingId, service: b?.serviceName, doneAt: b?.checkOutAt ?? p.requestedAt ?? p.createdAt };
 };
 
-/** "3 hr 10 min", "45 min", "2 days" since a time. Hours and minutes only. */
+/** How long ago a time was, such as "3 hr 10 min" or "45 min". From 48 hours on it shows whole days, such as "2 days". */
 export const ageText = (since?: string) => {
   if (!since) return "";
   const min = Math.max(0, Math.floor((Date.now() - new Date(since).getTime()) / 6e4));
@@ -38,7 +38,8 @@ export const ageText = (since?: string) => {
 export const LATE_HOURS = 3;
 export const isLate = (since?: string) => !!since && Date.now() - new Date(since).getTime() > LATE_HOURS * 36e5;
 
-// PAYOUTS_MODE=stripe (backend): Buddies are paid by a Stripe transfer at check-out, then Stripe's payout to their bank.
+// When the backend sets PAYOUTS_MODE=stripe, Buddies are paid by a Stripe transfer at check-out, and Stripe then pays
+// it out to their bank.
 export type Mode = "manual" | "stripe";
 export type StripePayout = {
   _id: string; bookingId: string | null; serviceName: string | null; checkOutAt: string | null; amount: number | null;
@@ -46,12 +47,12 @@ export type StripePayout = {
   sentAt: string | null; arrivesBy: string | null; paidAt: string | null; transferId: string | null;
   vendor: { name: string; email: string | null; phone: string | null; payoutAccountStatus: string } | null;
 };
-/** Manual unless the backend says stripe (an older backend has no /config). */
+/** Returns manual unless the backend says stripe. An older backend has no /config, so it counts as manual. */
 export const payoutMode = () =>
   api<{ mode?: string }>("admin/payouts/config").then((r): Mode => (r.data?.mode === "stripe" ? "stripe" : "manual"), (): Mode => "manual");
 
-/** What the sidebar badge and the dashboard count. Manual: payouts to send. Stripe: payouts needing attention plus
- *  old manual payouts still to send; normal Stripe payouts never count. */
+/** The number shown on the sidebar badge and the dashboard. In manual mode it counts payouts still to send. In Stripe
+ *  mode it counts payouts that need attention plus old manual payouts still to send. Normal Stripe payouts never count. */
 export async function payoutAlerts() {
   const mode = await payoutMode();
   const lists = await Promise.all([

@@ -12,9 +12,10 @@ import { MoneyDrawer } from "./MoneyDrawer";
 import { PlatformPayouts } from "./PlatformPayouts";
 import s from "./money.module.css";
 
-// The booking figures add up what bookings record. Stripe fees and what Any-Buddy keeps come from the money ledger
-// (GET admin/money/*). Bookings from before the ledger have no entries: they show "—", never a guessed fee.
-// Every amount the ledger sends is positive; the label says which way it moved (held is signed: negative = released).
+// The booking figures add up what the bookings themselves record. Stripe fees and what AnyBuddy keeps come from the
+// money ledger (GET admin/money/*). Bookings made before the ledger existed have no entries, so they show "—" rather
+// than a guessed fee. Every amount the ledger sends is positive, and the label says which way it moved. Held money is
+// the exception: it is signed, and a negative value means it was released.
 type Row = Booking & { status: number };
 type Ledger = { _id: string; in: number; out: number; held: number; recovered: number; net: number; fees: number; feesLost: number; refundedFully: boolean };
 type Period = { entries: number; bookings: number; in: number; out: number; held: number; recovered: number; net: number; commission: number; fees: number; feesLost: number; feesUnattributed: number };
@@ -23,7 +24,8 @@ const thisMonth = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "
 const monthDays = (m: string) => { const [y, mo] = m.split("-").map(Number); return { from: `${m}-01`, to: `${m}-${String(new Date(y, mo, 0).getDate()).padStart(2, "0")}` }; };
 const split = (b: Row) => {
   const st = bookingState(b), paid = b.price, tax = b.taxAmount ?? 0, fee = b.commissionAmount ?? 0;
-  // Completed: the unused hours paid back at check-out count as refunded (a failed one stays untraced until retried).
+  // For completed bookings, the unused hours paid back at check-out count as refunded. A failed refund isn't counted
+  // until it is retried.
   const back = st === "Completed" && b.checkoutRefundStatus !== "failed" ? b.checkoutRefundAmount ?? 0 : 0;
   const refunded = st === "Expired" || st === "Canceled" ? paid : back;
   const held = st === "Request" || st === "Scheduled" ? paid : 0;

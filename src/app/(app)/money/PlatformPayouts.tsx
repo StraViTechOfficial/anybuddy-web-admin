@@ -9,8 +9,9 @@ import { Modal } from "@/components/Modal";
 import { useToast } from "@/components/Toast";
 import s from "./money.module.css";
 
-// Payouts to Citizens (by design): the Stripe payout schedule is Manual, so AnyBuddy's own money
-// (commission, sales tax held) reaches its bank only from here. The backend recomputes what is safe on every payout.
+// Payouts to AnyBuddy's account at Citizens. The Stripe payout schedule is deliberately set to Manual, so AnyBuddy's own
+// money (commission and the sales tax it holds) reaches its bank only from this screen. The backend recalculates the
+// safe amount on every payout.
 type Balance = {
   available: number; pending: number; held: number; reserve: number; safeToPayOut: number;
   lines: { label: string; amount: number; href?: string }[]; bank: { bankName: string | null; last4: string } | null; schedule: string | null;
@@ -73,17 +74,18 @@ export function PlatformPayouts() {
 
 const titleCase = (x: string) => x.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
-/** Confirm step: the amount starts at what is safe, can be lowered, and never goes above it. */
+/** The confirm step. The amount starts at the safe maximum and can be lowered, but never raised above it. */
 function PayOut({ safe, bankName, onClose, onDone }: { safe: number; bankName: string; onClose: () => void; onDone: () => void }) {
   const toast = useToast();
   const [text, setText] = useState(safe.toFixed(2));
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  // Stable close so Modal's focus effect runs once; blocked while sending (as in ReasonDialog).
+  // A stable close function, so Modal's focus effect runs only once. Closing is blocked while the payout is sending, as
+  // in ReasonDialog.
   const busyRef = useRef(false), closeRef = useRef(onClose);
   closeRef.current = onClose;
   const close = useCallback(() => { if (!busyRef.current) closeRef.current(); }, []);
-  // One key per confirm step: a double click or a retry after a network error pays once.
+  // One key per confirm step, so a double click or a retry after a network error pays only once.
   const [key] = useState(() => crypto.randomUUID());
   const amount = Number(text);
   const problem = !/^\d+(\.\d{1,2})?$/.test(text.trim()) ? "Enter an amount in dollars, like 250.00."

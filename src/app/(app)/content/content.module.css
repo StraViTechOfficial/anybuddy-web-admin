@@ -6,7 +6,7 @@
 .tool[aria-pressed="true"] { background: var(--canvas); color: var(--ink); font-weight: 600; box-shadow: var(--shadow1); }
 .tool[disabled] { opacity: .4; cursor: not-allowed; }
 .sep { width: 1px; height: 20px; background: var(--line2); margin: 0 4px; }
-/* Reads like the live page: the admin edits what customers will see. */
+/* Styled like the live page, so the admin edits exactly what customers will see. */
 .doc { min-height: 360px; max-height: 70vh; overflow-y: auto; padding: 18px 22px; font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
 .doc:focus { outline: 0; }
 .doc:focus-visible { box-shadow: inset 0 0 0 2px var(--navy-4); }

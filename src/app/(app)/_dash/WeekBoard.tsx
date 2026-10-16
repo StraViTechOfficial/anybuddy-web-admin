@@ -5,7 +5,8 @@ import s from "./charts.module.css";
 
 const ymd = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d); // YYYY-MM-DD in New York
 
-// Mon–Sun of the current week; requests are dashed until a Buddy accepts (same language as the provider web board).
+// Monday to Sunday of the current week. Requests are drawn dashed until a Buddy accepts them, the same way the Buddy
+// web app's board shows them.
 export function WeekBoard({ bookings }: { bookings: (Booking & { status?: number })[] }) {
   const today = ymd(new Date());
   const t = new Date(today + "T12:00:00");

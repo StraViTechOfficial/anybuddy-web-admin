@@ -8,7 +8,8 @@ import { norm, priceText, say, stepsBody, stepsOf, type Catalog, type Service } 
 import { PhotoPick } from "./PhotoPick";
 import s from "./catalog.module.css";
 
-/** Add or edit one service. The category comes pre-picked from where the admin started (no confusion). */
+/** Adds or edits one service. The category is already chosen from where the admin started, so there is no doubt
+ *  which category the service belongs to. */
 export function ServiceForm({ data, svc, catId, name, onClose, onSaved }: {
   data: Catalog; svc?: Service; catId?: string; name?: string; onClose: () => void; onSaved: () => void;
 }) {

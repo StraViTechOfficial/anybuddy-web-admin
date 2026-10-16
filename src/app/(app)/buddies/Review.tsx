@@ -10,11 +10,11 @@ import { Modal } from "@/components/Modal";
 import { ReasonDialog } from "@/components/ReasonDialog";
 import s from "./buddies.module.css";
 
-// v2: one licence row per licensed category the Buddy offers; the file comes from ProviderDetails.licences.
+// One licence row for each licensed category the Buddy offers. The file comes from ProviderDetails.licences.
 type LicenceRow = { categoryId: string; categoryName: string; licenceName: string; status: "missing" | "pending" | "approved" | "needs_changes"; note?: string | null };
 type Onboarding = { stage: "details" | "services" | "documents" | "submitted"; step: number | null; bookable: boolean;
-  verify?: { submitted: boolean; submittedAt: string | null }; // v3 (older servers: none)
-  signupFlow?: 3 | null; // v3 sign-ups take a selfie; older apps never do
+  verify?: { submitted: boolean; submittedAt: string | null }; // only newer servers send this
+  signupFlow?: 3 | null; // 3 means the newer sign-up flow, which takes a selfie. Older apps never do.
   checklist: { payouts: boolean; photo: boolean; hours: boolean; email: boolean; about: boolean; licences: LicenceRow[] } };
 type Detail = { ProviderDetails: Buddy & {
   availability?: { day: number; isOpen: boolean; from: string; to: string }[]; averageRating?: number; totalRatings?: number; totalEarning?: number;
@@ -24,10 +24,10 @@ type Detail = { ProviderDetails: Buddy & {
   cardBrand?: string | null; cardLast4?: string | null; stripeAccountId?: string | null;
 }; categories?: { categoryName: string }[] };
 type Offer = { _id: string; serviceName: string; price: number; durationType: number };
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; // backend day 0 = Sunday (moment .day())
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; // the backend counts day 0 as Sunday, like moment's .day()
 const DOCS: [keyof Buddy, string, React.ElementType][] = [["IdProofFront", "Photo ID, front", IdentificationCard], ["IdProofBack", "Photo ID, back", IdentificationCard], ["certificate", "Trade license", FileText], ["additionalDoc", "Insurance", FileText]];
-// The live selfie, shown first; only v3 sign-ups (signupFlow 3) take one, so older
-// Buddies are counted out of 4, v3 Buddies out of 5.
+// The live selfie is shown first. Only the newer sign-up flow (signupFlow 3) takes one, so Buddies who signed up
+// earlier are counted out of 4 documents and newer ones out of 5.
 const SELFIE: (typeof DOCS)[number] = ["selfieDoc", "Selfie (match to the ID)", UserFocus];
 export const docsFor = (b: Buddy, v3 = b.signupFlow === 3) => (v3 || b.selfieDoc ? [SELFIE, ...DOCS] : DOCS);
 export const docCount = (b: Buddy, v3?: boolean) => docsFor(b, v3).filter(([k]) => !!b[k]).length;
@@ -39,8 +39,9 @@ const PAYOUT: Record<string, [string, string]> = {
 };
 const STAGE = { details: "Step 1 of 3 · Your details", services: "Step 2 of 3 · Services and rates", documents: "Step 3 of 3 · Documents", submitted: "Sign-up sent" };
 
-/** One Buddy: documents, services with their own prices, hours; decide (waiting) or block (approved). */
-// The detail reply has no verificationStatus / isActive, so callers pass what the list knows.
+/** Shows one Buddy's documents, services with their own prices, and hours. The admin can decide on a waiting Buddy or
+ *  block an approved one. */
+// The detail reply has no verificationStatus or isActive, so callers pass in what the list already knows.
 export function Review({ id, known, onDecided }: { id: string; known: { status: 0 | 1 | 2; active: number }; onDecided?: (id: string, status: 1 | 2) => void }) {
   const toast = useToast();
   const { data, error, loading, reload } = useLoad(async () => {
@@ -63,10 +64,11 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
   const b = { ...data.ProviderDetails, isActive: activeNow ?? known.active }, name = fullName(b), status = decidedNow ?? known.status;
   const canApprove = !!b.IdProofFront && !!b.IdProofBack;
   const ob = data.ProviderDetails.onboarding, licences = licNow ?? ob?.checklist.licences ?? [];
-  // A Buddy on an older app sent one generic licence (`certificate`); the server lets it be approved for a category.
+  // A Buddy on an older app sent one general licence (`certificate`). The server lets the admin approve it for a
+  // category.
   const fileOf = (l: LicenceRow) => data.ProviderDetails.licences?.find((x) => String(x.categoryId) === String(l.categoryId))?.url || b.certificate || undefined;
 
-  // Reject throws so ReasonDialog shows the error inside itself; approve reports by toast.
+  // Reject throws on failure, so ReasonDialog shows the error inside the dialog. Approve reports its result with a toast.
   async function send(st: 1 | 2, reason = "") {
     await api("admin/service-provider/update-verification-status", { method: "PATCH", body: { serviceProviderId: id, status: st, reason: reason || undefined } });
     toast(st === 1 ? `${name} approved · they can take bookings now` : `${name} rejected · email sent`);
@@ -79,7 +81,8 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
     try { await send(1); } catch (e) { toast((e as Error).message); }
     setBusy(false);
   }
-  // Separate from the ID decision. "Needs changes" throws so ReasonDialog shows the error inside itself.
+  // This is separate from the ID decision. "Needs changes" throws on failure, so ReasonDialog shows the error inside the
+  // dialog.
   async function licence(l: LicenceRow, status: "approved" | "needs_changes", note = "") {
     const { data: r } = await api<{ licences: LicenceRow[] }>("admin/service-provider/licence-status", { method: "PATCH", body: { serviceProviderId: id, categoryId: l.categoryId, status, note: note || undefined } });
     setLicNow(r.licences);
@@ -191,7 +194,7 @@ export function Review({ id, known, onDecided }: { id: string; known: { status: 
       </section>
 
       {rejecting && (
-        // The server ignores `reason` today and sends a fixed "not approved, contact support" email + app notice.
+        // The server currently ignores `reason` and sends a fixed "not approved, contact support" email and app notice.
         <ReasonDialog title={`Reject ${name}'s application`} onClose={() => setRejecting(false)} onConfirm={(r) => send(2, r)}
           next={<>{name.split(" ")[0]} gets an email and an app notice saying the account wasn&apos;t approved and to contact AnyBuddy support. You can approve them later from Rejected.</>}
           label="Reason for rejecting" placeholder="Example: The ID photo is blurry. Upload a clear photo of the front."

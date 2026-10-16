@@ -1,12 +1,13 @@
-/* Design tokens + shared primitives only. Screen styles live next to their component as *.module.css.
-   Colours and type scale follow the customer web (ds.css + WEBSITE-STANDARD.md); admin = navy, like the customer apps. */
+/* Only design tokens and shared building blocks live here. Each screen's styles sit next to its component in a
+   *.module.css file. Colours and type sizes follow the customer website (ds.css and WEBSITE-STANDARD.md), and the
+   admin uses navy, like the customer apps. */
 :root {
   --navy: #24345f; --navy-d: #1c2a4f; --navy-4: #4a5f96; --navy-2: #c9d2ea; --navy-1: #e8ecf5; --navy-0: #f4f6fb;
   --amber: #f2a14a; --amber-soft: #fdf3e6; --amber-ink: #a64b0a;
   --ink: #222; --ink2: #484848; --mute: #6a6a6a; --line: #ebebeb; --line2: #ddd; --field: #8a8a8a;
   --canvas: #fff; --soft: #f7f7f7; --side: #fbfbfc; --cream: #faf7f2;
   --ok: #177245; --ok-soft: #ecf7f0; --bad: #b42318; --bad-soft: #fef3f2; --info: #2d4f9e; --info-soft: #eef2fb;
-  /* chart marks, checked with the dataviz palette validator (light + dark pass) */
+  /* Chart colours. They pass the dataviz palette validator in both light and dark mode. */
   --m-req: #c77a1e; --m-sch: #3f5fc0; --m-done: #3a9a68; --m-exp: #a8322e; --m-cxl: #b9bcc4;
   --mo-paid: #3f5fc0; --mo-owed: #3a9a68; --mo-held: #c77a1e; --mo-ref: #9b4dca;
   --shadow1: 0 1px 2px rgba(20,30,60,.06); --shadow2: 0 12px 32px rgba(20,30,60,.14);
@@ -78,7 +79,7 @@ h3 { font-size: var(--fs-body); font-weight: 600; }
 .flag.bad { color: var(--bad); }
 .note { display: flex; gap: 10px; font-size: 13px; color: var(--ink2); background: var(--cream); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
 
-/* form fields: visible label, message under the field */
+/* Form fields have a visible label and show their message under the field. */
 .field { display: grid; gap: 6px; align-content: start; }
 .field > span { font-size: var(--fs-sm); font-weight: 600; }
 .input { height: 40px; width: 100%; padding: 0 11px; border: 1px solid var(--field); border-radius: var(--r); background: var(--canvas); font-size: 16px; }
@@ -100,7 +101,7 @@ tr.click:hover { background: var(--navy-0); }
 @media (max-width: 720px) { .btn, .input { height: 44px; } textarea.input { height: auto; } h1 { font-size: 24px; } }
 kbd { font-family: ui-monospace, Menlo, monospace; font-size: 11px; border: 1px solid var(--line2); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--canvas); }
 
-/* list toolbar: status tabs + search, shared by every list screen (one rule, one place) */
+/* The list toolbar, with status tabs and search. Every list screen shares this one rule. */
 .tbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--line); }
 .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line2); border-radius: 10px; padding: 3px; background: var(--soft); gap: 2px; }
 .seg button { border: 0; background: none; height: 32px; padding: 0 12px; border-radius: 7px; font-weight: 500; color: var(--mute); display: flex; gap: 6px; align-items: center; }

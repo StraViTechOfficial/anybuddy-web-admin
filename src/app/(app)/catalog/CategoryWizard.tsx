@@ -11,7 +11,7 @@ import s from "./catalog.module.css";
 
 const STEPS = ["Name & look", "Services", "Check & create"];
 
-/** New category in 3 steps; it can't be empty, so step 2 needs at least one service. */
+/** Creates a new category in 3 steps. A category can't be empty, so step 2 needs at least one service. */
 export function CategoryWizard({ data, onClose, onCreated }: { data: Catalog; onClose: () => void; onCreated: (id: string) => void }) {
   const toast = useToast();
   const [step, setStep] = useState(1);
