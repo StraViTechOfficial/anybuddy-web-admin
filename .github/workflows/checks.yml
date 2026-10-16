@@ -1,0 +1,19 @@
+# Runs on every push and pull request. It needs no secrets, so it also runs for pull requests from forks.
+name: Checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      # Fails only on high or critical advisories in packages that ship to production.
+      - run: npm audit --omit=dev --audit-level=high
