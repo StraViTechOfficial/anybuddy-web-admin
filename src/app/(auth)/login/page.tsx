@@ -28,7 +28,8 @@ function Login() {
     try {
       await api("admin/auth/login", { method: "POST", body: { email, password } });
       const next = q.get("next");
-      window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
+      // Same-site paths only: browsers read "/\evil.com" like "//evil.com", another site.
+      window.location.assign(next && /^\/(?![/\\])/.test(next) ? next : "/");
     } catch (x) {
       setErr((x as Error).message);
       setBusy(false);
