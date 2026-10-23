@@ -13,7 +13,7 @@
     "dompurify": "3.4.16",
     "next": "^15.5.26",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",
